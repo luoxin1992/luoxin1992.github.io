@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="用iptables实现端口映射"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2016/12/30/port-mapping-by-iptables/"/>
+
+
+<meta name="description" content="按照项目对云主机的规划，只有一台主机具有外网IP（下文称A主机），其他主机都只有内网IP（下文称B主机）。换句话说，只有A主机可以访问外网，B主机不行。虽然这是出于安全性和成本等方面的考虑（数据库、后端接口等不宜暴露），但是这样一来，管理B主机都很成问题了，如何解决呢？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用iptables实现端口映射">
+<meta property="og:url" content="http://www.lx1992.com.cn/2016/12/30/port-mapping-by-iptables/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="按照项目对云主机的规划，只有一台主机具有外网IP（下文称A主机），其他主机都只有内网IP（下文称B主机）。换句话说，只有A主机可以访问外网，B主机不行。虽然这是出于安全性和成本等方面的考虑（数据库、后端接口等不宜暴露），但是这样一来，管理B主机都很成问题了，如何解决呢？">
+<meta property="og:updated_time" content="2017-01-26T19:41:15.431Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="用iptables实现端口映射">
+<meta name="twitter:description" content="按照项目对云主机的规划，只有一台主机具有外网IP（下文称A主机），其他主机都只有内网IP（下文称B主机）。换句话说，只有A主机可以访问外网，B主机不行。虽然这是出于安全性和成本等方面的考虑（数据库、后端接口等不宜暴露），但是这样一来，管理B主机都很成问题了，如何解决呢？">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> 用iptables实现端口映射 · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          用iptables实现端口映射
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2016年12月30日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>按照项目对云主机的规划，只有一台主机具有外网IP（下文称A主机），其他主机都只有内网IP（下文称B主机）。换句话说，只有A主机可以访问外网，B主机不行。虽然这是出于安全性和成本等方面的考虑（数据库、后端接口等不宜暴露），但是这样一来，管理B主机都很成问题了，如何解决呢？</p>
+<a id="more"></a>
+<p>索性所有云主机将会位于同一个机房，内网是互通的，因此可以在A主机上，用Linux系统的神器iptables配置端口转发，从而实现从外网对B主机的访问。下面的配置都在A主机上完成。</p>
+<p>已知A机器内网IP：192.168.1.68，外网IP：10.0.0.9，B机器内网IP：192.168.1.64，要实现设置当外网访问A机器22681端口时转发至B机器22端口，也即可以使用命令直接从外网登录B主机<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ssh -p 22681 username(B)@hostname(A)</div></pre></td></tr></table></figure></p>
+<p>首先要启用IPv4转发，打开/etc/sysctl.conf文件，将这一行前的注释符号去掉<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">net.ipv4.ip_forward=0</div></pre></td></tr></table></figure></p>
+<p>保存后不放心的话可以用这个命令检查一下（p=print）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sysctl -p</div></pre></td></tr></table></figure></p>
+<p>然后是配置转发，步骤如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">#设置将A机器内网22681端口上的请求转发至B机器上</div><div class="line">iptables -t nat -A PREROUTING -d 192.168.1.68 -p tcp –dport 22681 -j DNAT –to-destination 192.168.1.64:22</div><div class="line">#将B机器的应答数据返回至A机器</div><div class="line">iptables -t nat -A POSTROUTING -s 0.0.0.0/0 -p tcp –dport 22 -j SNAT –to-source 192.168.1.68</div></pre></td></tr></table></figure>
+<p>最后是保存配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables-save</div></pre></td></tr></table></figure></p>
+<p>当然，Linux系统中iptables其实是个很复杂的东西，要不然怎么可以称之为“神器”嘛，前面配置的时候一大堆PREROUTING、POSTROUTING、DNAT、SNAT的本文也没有多做解释，有想要详细了解的，我觉着<a href="http://wwdhks.blog.51cto.com/839773/1154032" target="_blank" rel="external">这篇文章</a>分析的还算详细。</p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2017/01/01/install-mysql-server/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">搭建MySQL服务器</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2016/12/25/set-static-ip-in-ubuntu/">
+        <span class="next-text nav-default">Ubuntu设置静态IP地址</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2016/12/30/port-mapping-by-iptables/';
+        
+            this.page.identifier = 'bd5860f0-e3f4-11e6-9c59-c12708302e86';
+        
+        this.page.title = '用iptables实现端口映射';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>

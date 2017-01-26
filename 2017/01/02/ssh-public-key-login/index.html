@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="配置ssh免密码登录"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/01/02/ssh-public-key-login/"/>
+
+
+<meta name="description" content="绝大多数情况下，我们都是通过ssh登录到云主机的，这个命令就是最最常规的ssh方式登录1ssh username@hostname
+但一般地，线上主机多多少少会有一些额外的登录限制（当然，还是出于安全性的考虑）。常见的限制包括，限制从某些主机登录，限制用ssh密钥而不允许用密码登录等，这篇博客说说如何来配置后一种限制。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="配置ssh免密码登录">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/01/02/ssh-public-key-login/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="绝大多数情况下，我们都是通过ssh登录到云主机的，这个命令就是最最常规的ssh方式登录1ssh username@hostname
+但一般地，线上主机多多少少会有一些额外的登录限制（当然，还是出于安全性的考虑）。常见的限制包括，限制从某些主机登录，限制用ssh密钥而不允许用密码登录等，这篇博客说说如何来配置后一种限制。">
+<meta property="og:updated_time" content="2017-01-26T19:52:33.904Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="配置ssh免密码登录">
+<meta name="twitter:description" content="绝大多数情况下，我们都是通过ssh登录到云主机的，这个命令就是最最常规的ssh方式登录1ssh username@hostname
+但一般地，线上主机多多少少会有一些额外的登录限制（当然，还是出于安全性的考虑）。常见的限制包括，限制从某些主机登录，限制用ssh密钥而不允许用密码登录等，这篇博客说说如何来配置后一种限制。">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> 配置ssh免密码登录 · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          配置ssh免密码登录
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年1月2日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+      <div class="post-toc" id="post-toc">
+        <h2 class="post-toc-title">文章目录</h2>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-配置ssh免密码登录"><span class="toc-text">1. 配置ssh免密码登录</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-1-在A机器上生成ssh密钥对"><span class="toc-text">1.1 在A机器上生成ssh密钥对</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#1-2-将公钥传输到B机器"><span class="toc-text">1.2 将公钥传输到B机器</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#1-3-使B机器信任A机器的公钥"><span class="toc-text">1.3 使B机器信任A机器的公钥</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#1-4-配置权限"><span class="toc-text">1.4 配置权限</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-关闭密码登录"><span class="toc-text">2. 关闭密码登录</span></a></li></ol>
+        </div>
+      </div>
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>绝大多数情况下，我们都是通过ssh登录到云主机的，这个命令就是最最常规的ssh方式登录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ssh username@hostname</div></pre></td></tr></table></figure></p>
+<p>但一般地，线上主机多多少少会有一些额外的登录限制（当然，还是出于安全性的考虑）。常见的限制包括，限制从某些主机登录，限制用ssh密钥而不允许用密码登录等，这篇博客说说如何来配置后一种限制。</p>
+<a id="more"></a>
+<h4 id="1-配置ssh免密码登录"><a href="#1-配置ssh免密码登录" class="headerlink" title="1. 配置ssh免密码登录"></a>1. 配置ssh免密码登录</h4><p>这一步除了安全性因素外，其实懒也占了挺大一块的，ssh登录在后期是要大量使用的，每次输入密码真的太麻烦，所以在这里配置下ssh免密码登录。</p>
+<p>它的原理也很简单，假设要从A机器登录B机器，默认地会要求输入B机器的密码，但如果B机器上有A机器的公钥，就可以跳过这个步骤。所以我们要做的，就是在A机器上生成密钥对，并将其中的公钥提供给B机器。</p>
+<h5 id="1-1-在A机器上生成ssh密钥对"><a href="#1-1-在A机器上生成ssh密钥对" class="headerlink" title="1.1 在A机器上生成ssh密钥对"></a>1.1 在A机器上生成ssh密钥对</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ssh-keygen -t rsa</div></pre></td></tr></table></figure>
+<p>运行后一路回车，即可在~/.ssh目录下生成id_rsa和id_rsa.pub两个文件，其中带.pub后缀的就是公钥，另一个是私钥，千万不能泄露哦！</p>
+<h5 id="1-2-将公钥传输到B机器"><a href="#1-2-将公钥传输到B机器" class="headerlink" title="1.2 将公钥传输到B机器"></a>1.2 将公钥传输到B机器</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">scp ~/.ssh/id_rsa.pub username@hostname:~/</div></pre></td></tr></table></figure>
+<p>其中的username是B机器的用户名，hostname是B机器的主机名或IP地址，这时还是要输入密码的。</p>
+<h5 id="1-3-使B机器信任A机器的公钥"><a href="#1-3-使B机器信任A机器的公钥" class="headerlink" title="1.3 使B机器信任A机器的公钥"></a>1.3 使B机器信任A机器的公钥</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cat ~/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys</div></pre></td></tr></table></figure>
+<p>这里补上后来学到的另一种方案，可以用ssh-copy-id代替scp手动复制文件、cat重定向公钥（即1.2、1.3步）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ssh-copy-id username@hostname</div></pre></td></tr></table></figure></p>
+<h5 id="1-4-配置权限"><a href="#1-4-配置权限" class="headerlink" title="1.4 配置权限"></a>1.4 配置权限</h5><p>这一步网上的说法也是必须的，虽然一开始我没有配置这一步也没有出错，但是仔细想想出于安全性的考虑还是做一下为妙。所要完成的任务就是把B机器的.ssh目录权限设置成700（仅用户本人可以读、写、访问）， authorized_keys文件权限设置成600（仅用户本人可以读、写）。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">chmod 700 .ssh</div><div class="line">chmod 600 .ssh/authorized_keys</div></pre></td></tr></table></figure></p>
+<p>行了！试一下，在A机器上直接ssh username@hostname不再需要输入密码就直接登录了。</p>
+<h4 id="2-关闭密码登录"><a href="#2-关闭密码登录" class="headerlink" title="2. 关闭密码登录"></a>2. 关闭密码登录</h4><p>上一步实现了ssh密钥登录，即快捷又方便，那么自然就可以关闭密码登录了。vim打开/etc/ssh/sshd_config文件，找到并修改下面2行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">PubkeyAuthentication yes</div><div class="line">PasswordAuthentication no</div></pre></td></tr></table></figure></p>
+<p>然后重启一下sshd<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">service sshd restart</div></pre></td></tr></table></figure></p>
+<p>搞定！现在再想使用密码登录会告诉你，不行！安全性进一步提高了。</p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2017/01/03/reset-mysql-server/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">重置MySQL服务器</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2017/01/02/user-config-in-ubuntu/">
+        <span class="next-text nav-default">Ubuntu简单用户管理</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2017/01/02/ssh-public-key-login/';
+        
+            this.page.identifier = 'f39efda0-e3f3-11e6-9a0b-c313e55783c0';
+        
+        this.page.title = '配置ssh免密码登录';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>

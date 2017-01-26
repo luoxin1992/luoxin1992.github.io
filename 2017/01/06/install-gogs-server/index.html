@@ -11,7 +11,7 @@
 
 
 
-  <meta name="description" content="更新日志"/>
+  <meta name="description" content="搭建Gogs「私有Git版本控制」服务"/>
 
 
 
@@ -28,67 +28,19 @@
 
 
 
-<link rel="canonical" href="http://www.lx1992.com.cn/changelog/"/>
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/01/06/install-gogs-server/"/>
 
 
-<meta name="description" content="更新日志[1.0.2] - 2017-01-27
-
-告别多说，拥抱Disqus
-博客正式上线，祝大家新年快乐、身体健康、阖家幸福
-
-[1.0.1] - 2017-01-26
-
-修复BUG若干
-
-[1.0.0] - 2017-01-25
-
-初始版本
-
-
-Change Log[1.0.2] - 2017-01-27
-
-Change the comment module from DuoShuo to">
-<meta property="og:type" content="website">
-<meta property="og:title" content="更新日志">
-<meta property="og:url" content="http://www.lx1992.com.cn/changelog/index.html">
+<meta name="description" content="Gogs(Go Git Service)是一款使用Go语言开发，极易以最简单、最快速和最轻松的方式搭建的自助Git服务。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="搭建Gogs「私有Git版本控制」服务">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/01/06/install-gogs-server/index.html">
 <meta property="og:site_name" content="LuoXin's World">
-<meta property="og:description" content="更新日志[1.0.2] - 2017-01-27
-
-告别多说，拥抱Disqus
-博客正式上线，祝大家新年快乐、身体健康、阖家幸福
-
-[1.0.1] - 2017-01-26
-
-修复BUG若干
-
-[1.0.0] - 2017-01-25
-
-初始版本
-
-
-Change Log[1.0.2] - 2017-01-27
-
-Change the comment module from DuoShuo to">
-<meta property="og:updated_time" content="2017-01-26T17:12:59.403Z">
+<meta property="og:description" content="Gogs(Go Git Service)是一款使用Go语言开发，极易以最简单、最快速和最轻松的方式搭建的自助Git服务。">
+<meta property="og:updated_time" content="2017-01-26T19:54:11.892Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="更新日志">
-<meta name="twitter:description" content="更新日志[1.0.2] - 2017-01-27
-
-告别多说，拥抱Disqus
-博客正式上线，祝大家新年快乐、身体健康、阖家幸福
-
-[1.0.1] - 2017-01-26
-
-修复BUG若干
-
-[1.0.0] - 2017-01-25
-
-初始版本
-
-
-Change Log[1.0.2] - 2017-01-27
-
-Change the comment module from DuoShuo to">
+<meta name="twitter:title" content="搭建Gogs「私有Git版本控制」服务">
+<meta name="twitter:description" content="Gogs(Go Git Service)是一款使用Go语言开发，极易以最简单、最快速和最轻松的方式搭建的自助Git服务。">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
@@ -124,7 +76,7 @@ Change the comment module from DuoShuo to">
 
 
 
-    <title> 更新日志 · LuoXin's World </title>
+    <title> 搭建Gogs「私有Git版本控制」服务 · LuoXin's World </title>
   </head>
 
   <body>
@@ -210,41 +162,82 @@ Change the comment module from DuoShuo to">
         <div class="content-wrapper">
           <div id="content" class="content">
             
+  
   <article class="post">
-    <div class="post-content">
-      <h3 id="更新日志"><a href="#更新日志" class="headerlink" title="更新日志"></a>更新日志</h3><p><strong>[1.0.2] - 2017-01-27</strong></p>
-<ul>
-<li>告别<a href="http://duoshuo.com/" target="_blank" rel="external">多说</a>，拥抱<a href="https://disqus.com/" target="_blank" rel="external">Disqus</a></li>
-<li>博客正式上线，祝大家新年快乐、身体健康、阖家幸福</li>
-</ul>
-<p><strong>[1.0.1] - 2017-01-26</strong></p>
-<ul>
-<li>修复BUG若干</li>
-</ul>
-<p><strong>[1.0.0] - 2017-01-25</strong></p>
-<ul>
-<li>初始版本</li>
-</ul>
-<hr>
-<h3 id="Change-Log"><a href="#Change-Log" class="headerlink" title="Change Log"></a>Change Log</h3><p><strong>[1.0.2] - 2017-01-27</strong></p>
-<ul>
-<li>Change the comment module from <a href="http://duoshuo.com/" target="_blank" rel="external">DuoShuo</a> to <a href="https://disqus.com/" target="_blank" rel="external">Disqus</a></li>
-<li>Publish online &amp; Happy Chinese new year</li>
-</ul>
-<p><strong>[1.0.1] - 2017-01-26</strong></p>
-<ul>
-<li>Fix some bugs</li>
-</ul>
-<p><strong>[1.0.0] - 2017-01-25</strong></p>
-<ul>
-<li>Init release</li>
-</ul>
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          搭建Gogs「私有Git版本控制」服务
+        
+      </h1>
 
+      <div class="post-meta">
+        <span class="post-time">
+          2017年1月6日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>Gogs(Go Git Service)是一款使用Go语言开发，极易以最简单、最快速和最轻松的方式搭建的自助Git服务。</p>
+<a id="more"></a>
+<p>相比于这个系列下面其他开发工具的安装和配置，gogs还算是比较简单的。另外考虑到建立linux/mysql用户、tar解压缩这一类的简单操作已经重复了太多次，本文就不再重复讲述了。</p>
+<p>首先将下载好的安装包解压到/opt目录下，并在mysql中运行scripts子目录下的mysql.sql文件。这步操作实际上就是创建了一个名为gogs、编码为utf8mb4的空数据库，因此也可以自己在mysql中创建。</p>
+<p>随后切换回上层目录（/opt/gogs），运行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">./gogs web</div></pre></td></tr></table></figure></p>
+<p>即可使用 <a href="http://ip:3000" target="_blank" rel="external">http://ip:3000</a> 访问gogs服务，进行进一步的安装和配置，包括gogs运行环境、数据库、管理员账户等。</p>
+<p>到此为止，gogs的安装和配置基本上就完成了，但还是以普通进程方式运行的，我们还应当配置为以<a href="">服务</a>或<a href="">守护进程</a>的方式运行，保证gogs服务开机自启动且稳定运行。</p>
+<p>这就完了？！我自己都觉得这次写的好水啊……</p>
+
+      
     </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2017/01/10/send-mail-using-external-smtp-by-postfix/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">用Postfix实现通过外部SMTP服务转发邮件</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2017/01/03/reset-mysql-server/">
+        <span class="next-text nav-default">重置MySQL服务器</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
   </article>
+
 
           </div>
           
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
 
         </div>
       </main>
@@ -318,11 +311,11 @@ Change the comment module from DuoShuo to">
 
   <script type="text/javascript">
     var disqus_config = function () {
-        this.page.url = 'http://www.lx1992.com.cn/changelog/index.html';
+        this.page.url = 'http://www.lx1992.com.cn/2017/01/06/install-gogs-server/';
         
-            this.page.identifier = 'd40ce7ec-6454-47bf-a0c8-79f7f8847579';
+            this.page.identifier = '3eafc500-e3f8-11e6-a257-1dbdfff75c3f';
         
-        this.page.title = '更新日志';
+        this.page.title = '搭建Gogs「私有Git版本控制」服务';
     };
     (function() {
     var d = document, s = d.createElement('script');

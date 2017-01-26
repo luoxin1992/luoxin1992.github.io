@@ -95,26 +95,18 @@
         </li>
       
         <li class="menu-item">
-          <a class="menu-item-link" href="/tags">
-            
-              <!-- 菜单项名称从语言文件中获取 -->
-              标签
-          </a>
-        </li>
-      
-        <li class="menu-item">
-          <a class="menu-item-link" href="/categories">
-            
-              <!-- 菜单项名称从语言文件中获取 -->
-              分类
-          </a>
-        </li>
-      
-        <li class="menu-item">
           <a class="menu-item-link" href="/about">
             
               <!-- 菜单项名称从语言文件中获取 -->
               关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
           </a>
         </li>
       
@@ -144,24 +136,17 @@
         
       </a>
     
-      <a class="mobile-menu-item" href="/tags">
-        
-        
-          Tags
-        
-      </a>
-    
-      <a class="mobile-menu-item" href="/categories">
-        
-        
-          Categories
-        
-      </a>
-    
       <a class="mobile-menu-item" href="/about">
         
         
           About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
         
       </a>
     
@@ -176,10 +161,10 @@
             
   <div class="categories">
     <div class="categories-title">
-      暂无分类
+      目前共计 8 个分类
     </div>
     <div class="categories-tags">
-      
+      <a class="category-link" href="/categories/disconf/">Disconf<span class="category-count">1</span></a> <a class="category-link" href="/categories/gogs/">Gogs<span class="category-count">1</span></a> <a class="category-link" href="/categories/linux/">Linux<span class="category-count">7</span></a> <a class="category-link" href="/categories/mysql/">MySQL<span class="category-count">2</span></a> <a class="category-link" href="/categories/postfix/">Postfix<span class="category-count">1</span></a> <a class="category-link" href="/categories/redis/">Redis<span class="category-count">1</span></a> <a class="category-link" href="/categories/redmine/">Redmine<span class="category-count">1</span></a> <a class="category-link" href="/categories/sonarqube/">Sonarqube<span class="category-count">1</span></a>
     </div>
   </div>
 
@@ -255,18 +240,22 @@
     </div>
 
     
-  
 
   <script type="text/javascript">
-    var duoshuoQuery = {short_name:"fr5ukiustiet"};
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/categories/index.html';
+        
+            this.page.identifier = '9570e9b7-2195-4f62-871e-118f46b96a45';
+        
+        this.page.title = '分类';
+    };
     (function() {
-      var ds = document.createElement('script');
-      ds.type = 'text/javascript';ds.async = true;
-      ds.id = 'duoshuo-script';
-      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-      ds.charset = 'UTF-8';
-      (document.getElementsByTagName('head')[0]
-      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
     })();
   </script>
 

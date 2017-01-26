@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="搭建Redis服务器"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/01/15/install-redis-server/"/>
+
+
+<meta name="description" content="Redis，一个开源、支持多种数据结构，亦支持集群和副本且高性能的内存存储。尽管它可被视为内存数据库，但更多地，我们在程序中把它当成缓存使用。缓存的内容也是多种多样，举几个简单的例子，常备访问的数据、维持会话的token，验证码等时效性较强的数据……">
+<meta property="og:type" content="article">
+<meta property="og:title" content="搭建Redis服务器">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/01/15/install-redis-server/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="Redis，一个开源、支持多种数据结构，亦支持集群和副本且高性能的内存存储。尽管它可被视为内存数据库，但更多地，我们在程序中把它当成缓存使用。缓存的内容也是多种多样，举几个简单的例子，常备访问的数据、维持会话的token，验证码等时效性较强的数据……">
+<meta property="og:updated_time" content="2017-01-26T20:01:43.785Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="搭建Redis服务器">
+<meta name="twitter:description" content="Redis，一个开源、支持多种数据结构，亦支持集群和副本且高性能的内存存储。尽管它可被视为内存数据库，但更多地，我们在程序中把它当成缓存使用。缓存的内容也是多种多样，举几个简单的例子，常备访问的数据、维持会话的token，验证码等时效性较强的数据……">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> 搭建Redis服务器 · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          搭建Redis服务器
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年1月15日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>Redis，一个开源、支持多种数据结构，亦支持集群和副本且高性能的内存存储。尽管它可被视为内存数据库，但更多地，我们在程序中把它当成缓存使用。缓存的内容也是多种多样，举几个简单的例子，常备访问的数据、维持会话的token，验证码等时效性较强的数据……</p>
+<a id="more"></a>
+<p>在搭建redis服务器，官方给出的教程是通过源码自行编译和安装。说是说make是个神器，但在ubuntu中，系统的软件源早已为我们准备好了一切，let’s go!<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">apt install redis-server</div></pre></td></tr></table></figure></p>
+<p>一步搞定有木有？嗯，想要挑战一下官方教程的当然也可以，看<a href="https://github.com/antirez/redis" target="_blank" rel="external">这里</a>和<a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-redis-on-ubuntu-16-04" target="_blank" rel="external">这里</a>。我自己其实也试验过，没有想象的那么复杂，无非gcc和make报几个错，缺少依赖的头文件什么的，解决起来也挺简单。</p>
+<p>前面的一键安装事实上同时安装好了server和client，在终端中运行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">redis-cli</div></pre></td></tr></table></figure></p>
+<p>就会自动连接localhost:6379上的redis-server，试着执行几个命令(“127.0.0.1:6379&gt;”打头的行是我们的输入，顶格的行是redis的输出)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">127.0.0.1:6379&gt; ping</div><div class="line">PONG</div><div class="line"></div><div class="line">127.0.0.1:6379&gt; set hello &quot;world&quot;</div><div class="line">OK</div><div class="line"></div><div class="line">127.0.0.1:6379&gt; get hello</div><div class="line">&quot;world&quot;</div></pre></td></tr></table></figure></p>
+<p>这样一来redis其实已经可用了，但还不够，至少我们要修改一下端口号、绑定的网卡、数据和日志文件路径什么的，vim打开/etc/redis/redis.conf，找到下面几行，大概位于50~200行之间，做相应的修改即可<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">port 6379</div><div class="line">bind 127.0.0.1</div><div class="line">logfile /var/log/redis-server.log</div><div class="line">dir /var/lib/redis</div></pre></td></tr></table></figure></p>
+<p>修改完问题就来了，redis服务停止以后再也启动不了了，因为是systemd启动服务时出错，所以日志打到了/var/log/syslog里边，一开始找了有些时候，看错误日志，说的是</p>
+<blockquote>
+<p>Jan 14 06:08:56 pocket-erp-db redis-server[3118]: Reading the configuration file, at line 108<br>Jan 14 06:08:56 pocket-erp-db redis-server[3118]: &gt;&gt;&gt; ‘logfile /data/logs/redis/redis-server.log’<br>Jan 14 06:08:56 pocket-erp-db redis-server[3118]: Can’t open the log file: Read-only file system</p>
+</blockquote>
+<p>神马？？说日志所在的/data挂载点是只读的？因为/data挂载的是一块云硬盘，实习那会在公司的测试机上也碰到过类似奇怪的问题。但这回先是mount看了一眼，显示是rw的，试着往里写个文件，也没啥异常，这就奇了怪了。</p>
+<p>谷歌走起，先是找到了<a href="http://stackoverflow.com/questions/19238701/redis-wont-start-after-upgrade" target="_blank" rel="external">这个</a>，他说是升级以后引入的BUG，重启一下就没事了，但我试了并不管用，后来找到了<a href="http://unix.stackexchange.com/questions/310219/process-mount-is-read-only/310360" target="_blank" rel="external">这个</a>，才是问题根本的原因。</p>
+<p>原来redis认定的“Read-only file system”跟mount显示的结果并不是一回事，他有他自己的一套逻辑，这个逻辑实质上位于systemd的配置中，vim打开/etc/systemd/system/redis.service，会看到下面几行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">ReadOnlyDirectories=/</div><div class="line">ReadWriteDirectories=-/var/lib/redis</div><div class="line">ReadWriteDirectories=-/var/log/redis</div><div class="line">ReadWriteDirectories=-/var/run/redis</div></pre></td></tr></table></figure></p>
+<p>原来除了指定的这3个目录，其他目录对于redis来说都是只读的，难怪会报错呢，改就一个字！别忘了改完这个文件要<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl daemon-reload</div></pre></td></tr></table></figure></p>
+<p>重新加载下systemd。</p>
+<p>等下！打住！做这几步操作之前麻烦先把服务停下来，虽然我也不确定是不是就是这个原因，我在服务运行期间做了上面的几个操作，再回过头来想重启服务时，卡在了停止服务那一步，更可怕的是，redis设置了“永不超时”……最后费尽周折好不容易重启了服务，幸好没出啥大篓子。</p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2017/01/17/install-sonarqube-server/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">搭建SonarQube「代码质量管理」服务</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2017/01/14/install-disconf-server/">
+        <span class="next-text nav-default">搭建Disconf「分布式配置管理」服务</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2017/01/15/install-redis-server/';
+        
+            this.page.identifier = '559273a0-e3f6-11e6-bc7a-6deb9a4fc397';
+        
+        this.page.title = '搭建Redis服务器';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>

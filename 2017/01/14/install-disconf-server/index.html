@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="搭建Disconf「分布式配置管理」服务"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/01/14/install-disconf-server/"/>
+
+
+<meta name="description" content="disconf是百度开源的一套分布式配置管理平台，详情可以戳这里。
+尽管类似的平台不在少数，国内的奇虎、阿里等也均有类似开源实现，但它对于我们后端应用中诸多配置，在使用和管理上之方便，是直到博主进入在某大型O2O公司实习时才深有体会。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="搭建Disconf「分布式配置管理」服务">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/01/14/install-disconf-server/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="disconf是百度开源的一套分布式配置管理平台，详情可以戳这里。
+尽管类似的平台不在少数，国内的奇虎、阿里等也均有类似开源实现，但它对于我们后端应用中诸多配置，在使用和管理上之方便，是直到博主进入在某大型O2O公司实习时才深有体会。">
+<meta property="og:updated_time" content="2017-01-26T19:13:49.995Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="搭建Disconf「分布式配置管理」服务">
+<meta name="twitter:description" content="disconf是百度开源的一套分布式配置管理平台，详情可以戳这里。
+尽管类似的平台不在少数，国内的奇虎、阿里等也均有类似开源实现，但它对于我们后端应用中诸多配置，在使用和管理上之方便，是直到博主进入在某大型O2O公司实习时才深有体会。">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> 搭建Disconf「分布式配置管理」服务 · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          搭建Disconf「分布式配置管理」服务
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年1月14日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+      <div class="post-toc" id="post-toc">
+        <h2 class="post-toc-title">文章目录</h2>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#安装依赖"><span class="toc-text">安装依赖</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#mysql和redis"><span class="toc-text">mysql和redis</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#tomcat和nginx"><span class="toc-text">tomcat和nginx</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#zookeeper"><span class="toc-text">zookeeper</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#配置"><span class="toc-text">配置</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#application-properties"><span class="toc-text">application.properties</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#jdbc-mysql-properties-amp-redis-config-properties"><span class="toc-text">jdbc-mysql.properties & redis-config.properties</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#log4j-properties-amp-logback-xml"><span class="toc-text">log4j.properties & logback.xml</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#zoo-properties"><span class="toc-text">zoo.properties</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#打包和部署"><span class="toc-text">打包和部署</span></a></li></ol>
+        </div>
+      </div>
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>disconf是百度开源的一套分布式配置管理平台，详情可以戳<a href="https://github.com/knightliao/disconf" target="_blank" rel="external">这里</a>。</p>
+<p>尽管类似的平台不在少数，国内的奇虎、阿里等也均有类似开源实现，但它对于我们后端应用中诸多配置，在使用和管理上之方便，是直到博主进入在某大型O2O公司实习时才深有体会。</p>
+<a id="more"></a>
+<p>试想一下，一个应用，首先肯定有多个环境，至少，线上线下连接的数据库肯定不相同，然后，不论是出于负载均衡，还是可用性方面的考虑，线上业务很可能不是单点的，也就是部署在了多台vm，或者docker中，某天因业务需要，要修改一个配置项……</p>
+<p>先解决前一个问题，纵然通过spring或者maven的profile都可以规避这个问题，更简单一点，写一个脚本，在启动程序时带几个跟当前环境相关的jvm启动参数，欧了；后一个问题，更简单了，配置文件一般不都在resource目录下嘛，改之、打包、部署～可……这样真的好么？</p>
+<p>本文将通过部署disconf来更高效地解决上面的问题。Come on！补充一句，disconf分为disconf-client和disconf-web两部分，client用在我们的业务系统中，web部署在我们的服务器上，本文两部分都会涉及。</p>
+<p>相比于其他应用，disconf的部署主要是依赖的的东西不少，而且都是比较重的，什么mysql、redis、zookeeper，好在这一些我们的其他业务系统也要用到，有些呢，甚至早就部署过了。</p>
+<h4 id="安装依赖"><a href="#安装依赖" class="headerlink" title="安装依赖"></a>安装依赖</h4><h5 id="mysql和redis"><a href="#mysql和redis" class="headerlink" title="mysql和redis"></a>mysql和redis</h5><p>作为最常见的关系数据库、内存数据库（虽然一般用作缓存了），不要说你没有哈，真没有的话，戳<a href="">这里</a>和<a href="">这里</a>看我以前的博客。</p>
+<h5 id="tomcat和nginx"><a href="#tomcat和nginx" class="headerlink" title="tomcat和nginx"></a>tomcat和nginx</h5><p>这两个家伙不比上头的数据库们罕见。其实一开始我还奇怪，为什么要同时使用两个web服务器，后来了解到，这是做法叫做“动静分离”，静态web资源依靠nginx，动态依靠tomcat，毕竟nginx在渲染静态资源时效率真的要高出不少。两者的安装和配置请戳<a href="">这里</a>和<a href="">这里</a>。</p>
+<h5 id="zookeeper"><a href="#zookeeper" class="headerlink" title="zookeeper"></a>zookeeper</h5><p>最后这个嘛，对分布式、高可用等概念稍微有一点了解的同学应该都听说过，本文暂时不会对它做深入的解释，它的安装，毕竟是可以通过ubuntu的软件源来完成的，方便了不少呢<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># zk需要java环境，一般地，openjdk可以代替oracle jdk</div><div class="line">apt install openjdk-8-jdk</div><div class="line"></div><div class="line"># zookeeperd用于提供zk的启动脚本，从而以服务形式管理zk</div><div class="line">apt install zookeeper zookeeperd</div></pre></td></tr></table></figure></p>
+<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p>其实这个副标题不是那么恰当，这一步要完成的是下载disconf-web并且修改它的配置文件来适应前边安装好的以来组件。disconf下载有那么一丁点特殊，它没有提供单独的下载地址，既然是github上的一个项目，直接clone吧<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git clone https://github.com/knightliao/disconf.git</div></pre></td></tr></table></figure></p>
+<p>然后打开./disconf-web/profiles/rd目录，其中有</p>
+<ul>
+<li>application.properties</li>
+<li>jdbc-mysql.properties</li>
+<li>log4j.properties</li>
+<li>logback.xml</li>
+<li>redis-config.properties</li>
+<li>zoo.properties</li>
+</ul>
+<p>共6个文件就是disconf的配置文件，我们需要依次修改。</p>
+<h5 id="application-properties"><a href="#application-properties" class="headerlink" title="application.properties"></a>application.properties</h5><p>首先这个文件是由application-demo.properties重命名而来的，这里边配置的是服务器域名和邮件通知功能。服务器域名，官方文档上说要和后边nginx里的配置保持一致。</p>
+<h5 id="jdbc-mysql-properties-amp-redis-config-properties"><a href="#jdbc-mysql-properties-amp-redis-config-properties" class="headerlink" title="jdbc-mysql.properties &amp; redis-config.properties"></a>jdbc-mysql.properties &amp; redis-config.properties</h5><p>这两个文件看名字猜也猜得到，配置mysql和redis的，我们要修改的主要是如何连接到相应的数据库。另外官方文档要求redis必须配置双实例，就算我们的redis服务单点，也要配置两个。</p>
+<h5 id="log4j-properties-amp-logback-xml"><a href="#log4j-properties-amp-logback-xml" class="headerlink" title="log4j.properties &amp; logback.xml"></a>log4j.properties &amp; logback.xml</h5><p>两个日志框架的配置文件，日志格式个人觉得没有什么修改的必要，但我们所有业务有统一的日志路径，所以日志路径是要修改的。因为没有细读过disconf的源代码，所以不是很清楚它是同时用了log4j和logback还是咋滴，两个文件中总共配置了3处日志，日志文件名分别是disconf-log4j.log、disconf-web.log和monitor.log。</p>
+<h5 id="zoo-properties"><a href="#zoo-properties" class="headerlink" title="zoo.properties"></a>zoo.properties</h5><p>最后这个是zookeeper的配置文件，这个文件原本配置了3台机器组成的zk集群，谁让我们服务都是单点的呢(笑～)，直接改成我们唯一的zk节点的ip和端口。</p>
+<p>另外这里有点小问题，此处配置的zk节点信息，client启动时会通过web api去获取和使用，如果我们配置成zk节点的内网ip，那线下可能就访问不到，而如果配置成外网ip，线上使用时所有数据岂不是要到公网上绕一圈？我暂时没有好的办法，配置成了公网ip，再在内网主机的hosts里加一行，强行将公网ip转向内网ip，哪位同学给个更好的解决方案哈～</p>
+<h4 id="打包和部署"><a href="#打包和部署" class="headerlink" title="打包和部署"></a>打包和部署</h4><p>disconf提供了一个用于打包自身的脚本：.disconf-web/deploy/deploy.sh，运行脚本前要指定好配置文件的所在路径，以及打包的输出路径。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"># 指定配置文件文件所在路径</div><div class="line">ONLINE_CONFIG_PATH=/tmp/disconf/disconf-web/profile/rd</div><div class="line">export ONLINE_CONFIG_PATH</div><div class="line"></div><div class="line"># 指定打包输出路径</div><div class="line">WAR_ROOT_PATH=/tmp/disconf/disconf-web/war</div><div class="line">export WAR_ROOT_PATH</div><div class="line"></div><div class="line"># 执行打包脚本（cd到disconf-web目录下执行）</div><div class="line">sh deploy/deploy.sh</div></pre></td></tr></table></figure></p>
+<p>可能要经过一段时间的等待（毕竟要下载不少jar包），打开刚才指定的目录输出路径，可以看到是一个熟悉的web项目的结构。吐槽一句，既然部署脚本已经帮忙把war包给解压了，那为何不好人做到底，把已经没用的war包顺手删掉呢？还有打包时复制过去的配置文件同样也是多余的呀。</p>
+<p>在正式部署之前还有一件事要做——初始化数据库，要用到的sql，disconf也都提供好了，位于./disconf-web/sql目录下，包括4个文件，执行的顺序看其中的readme吧。当然，这都是可以修改了，像什么环境啦，用户啦都可以定制得更符合我们的需要，还有许多测试数据可能也是我们不需要的。</p>
+<p>初始化好了数据库就可以开始部署了。前面说过，disconf做了动静分离，因此部署分两个部分。先部署动态部分（tomcat），修改tomcat端口为disconf的后端端口号（这里假定本机的tomcat上就跑这么一个应用～），打开配置目录下的server.xml文件，在<host>节点下添加这么一个虚拟主机，映射到站点根目录上<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&lt;Context path=&quot;&quot; docBase=&quot;/opt/disconf&quot; /&gt;</div></pre></td></tr></table></figure></host></p>
+<p>再部署静态部分（nginx），同样假定本机的nginx只被disconf使用，因此直接修改default站点（/etc/nginx/site-available/default文件）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">	listen 80 default_server;</div><div class="line">	root /opt/disconf/html;</div><div class="line">	index index.html;</div><div class="line">	server_name _;</div><div class="line">	location / &#123;</div><div class="line">		try_files $uri $uri/ =404;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>重新启动tomcat和nginx就完成了disconf的部署。注意这里完全将动态资源和静态资源分离了，这是因为我们还有另一台更前置的nginx，根据具体的uri匹配请求的资源应该被反向代理到这里的tomcat还是nginx上，因此如果到这一步要进行测试的话，记得访问动静态资源的端口号是不一样的。</p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2017/01/15/install-redis-server/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">搭建Redis服务器</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2017/01/11/ssh-port-forwarding/">
+        <span class="next-text nav-default">配置ssh端口转发</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2017/01/14/install-disconf-server/';
+        
+            this.page.identifier = '910de3e0-e3f8-11e6-8fa8-47416e51125a';
+        
+        this.page.title = '搭建Disconf「分布式配置管理」服务';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>

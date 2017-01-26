@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="上美团云Ubuntu主机咯"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/01/02/install-ubuntu-on-mos/"/>
+
+
+<meta name="description" content="其实我一直挺纠结这标题的，要不要这么高调嘛……况且原本的标题是《美团云Ubuntu主机折腾记》，可仔细想，我折腾啥子了？！明明就是几个配置好不啦。
+言归正传，项目中会用到数台云主机，今天终于鼓起勇气下了单。当然出于复杂性的考虑，这些云主机的操作系统没有采用线上更常见的CentOS，转向更为寻常的Ubuntu，当然是没有GUI的Server版。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="上美团云Ubuntu主机咯">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/01/02/install-ubuntu-on-mos/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="其实我一直挺纠结这标题的，要不要这么高调嘛……况且原本的标题是《美团云Ubuntu主机折腾记》，可仔细想，我折腾啥子了？！明明就是几个配置好不啦。
+言归正传，项目中会用到数台云主机，今天终于鼓起勇气下了单。当然出于复杂性的考虑，这些云主机的操作系统没有采用线上更常见的CentOS，转向更为寻常的Ubuntu，当然是没有GUI的Server版。">
+<meta property="og:updated_time" content="2017-01-26T19:26:49.774Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="上美团云Ubuntu主机咯">
+<meta name="twitter:description" content="其实我一直挺纠结这标题的，要不要这么高调嘛……况且原本的标题是《美团云Ubuntu主机折腾记》，可仔细想，我折腾啥子了？！明明就是几个配置好不啦。
+言归正传，项目中会用到数台云主机，今天终于鼓起勇气下了单。当然出于复杂性的考虑，这些云主机的操作系统没有采用线上更常见的CentOS，转向更为寻常的Ubuntu，当然是没有GUI的Server版。">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> 上美团云Ubuntu主机咯 · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          上美团云Ubuntu主机咯
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年1月2日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>其实我一直挺纠结这标题的，要不要这么高调嘛……况且原本的标题是《美团云Ubuntu主机折腾记》，可仔细想，我折腾啥子了？！明明就是几个配置好不啦。</p>
+<p>言归正传，项目中会用到数台云主机，今天终于鼓起勇气下了单。当然出于复杂性的考虑，这些云主机的操作系统没有采用线上更常见的CentOS，转向更为寻常的Ubuntu，当然是没有GUI的Server版。</p>
+<a id="more"></a>
+<p>云主机创建好以后，观察了一下，美团云这系统模板做的还是不错的，基本上可以立即使用，有一些小的点稍稍处理下也不会耽误太多的时间。</p>
+<p>首先是语言环境，系统默认的是en_US.UTF-8，似乎改成中文也没有什么不妥的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">dpkg-reconfigure locales</div></pre></td></tr></table></figure></p>
+<p>运行后会出现一个向导，第一步是选择需要支持的语言环境，默认只选中了en_US.UTF-8，要把zh_CN.UTF-8也一并勾上；第二步是选择默认的语言环境，同样选择zh_CN.UTF-8。OK，等待配置完成。</p>
+<p>默认的语言环境配置成中文后，直接从tty登录会看到大量口口口，其实就是中文乱码了，解决的办法也不是没有，把这段脚本加到bash_profile里即可<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">if [ $TERM == &quot;linux&quot; ] &amp;&amp; [ !-e $SSH_TTY ]; then</div><div class="line">    export LANG=&quot;en_US.UTF-8″</div><div class="line">    export LANGUAGE=&quot;en_US.UTF-8″</div><div class="line">fi</div></pre></td></tr></table></figure></p>
+<p>不过绝大多数情况下我们都是用ssh登录，这一步其实可做可不做了。网上的另一种说法是通过安装zhcon临时解决，这是一个类似ucdos的插件，从理论上说，对性能会在一定程度的影响。</p>
+<p>然后还需要配置下时区，这个系统模板默认的时区是美国时间，和北京时间差了13小时，每次看时间都要做下转换也是不爽<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">dpkg-reconfigure tzdata</div></pre></td></tr></table></figure></p>
+<p>在这个向导中选择亚洲（Asia）–&gt;上海（Shanghai），OK，这下时间对上了。</p>
+<p>最后一步，更新下系统吧，把Linux包管理的特性利用起来，再说线上主机，基本的安全性还是要保证的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">apt update</div><div class="line">apt upgrade</div></pre></td></tr></table></figure></p>
+<p>相信这两个命令没有同学说不知道了吧[微笑]</p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2017/01/02/user-config-in-ubuntu/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">Ubuntu简单用户管理</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2017/01/01/set-global-proxy-in-ubuntu/">
+        <span class="next-text nav-default">Ubuntu设置全局代理</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2017/01/02/install-ubuntu-on-mos/';
+        
+            this.page.identifier = 'c0302b50-e3ef-11e6-89a3-23dc8475b813';
+        
+        this.page.title = '上美团云Ubuntu主机咯';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>

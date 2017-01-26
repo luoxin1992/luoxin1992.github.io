@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="Ubuntu设置全局代理"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/01/01/set-global-proxy-in-ubuntu/"/>
+
+
+<meta name="description" content="之前有一篇文章用iptables做端口映射，实现了从外网直接ssh连接一台内网云主机，但即便这样，还是存在一些问题，譬如，apt仍旧无法访问外部源。
+至于原因哈，猜一个，因为前面配置端口转发的时候只映射了22端口，而更新软件源等，使用的是http的80端口，些许应该再配置下http的80端口、https的433端口……
+一不做二不休，直接在外网主机上用squid架设代理服务器，不就免去这一切乱七八">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ubuntu设置全局代理">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/01/01/set-global-proxy-in-ubuntu/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="之前有一篇文章用iptables做端口映射，实现了从外网直接ssh连接一台内网云主机，但即便这样，还是存在一些问题，譬如，apt仍旧无法访问外部源。
+至于原因哈，猜一个，因为前面配置端口转发的时候只映射了22端口，而更新软件源等，使用的是http的80端口，些许应该再配置下http的80端口、https的433端口……
+一不做二不休，直接在外网主机上用squid架设代理服务器，不就免去这一切乱七八">
+<meta property="og:updated_time" content="2017-01-26T19:49:31.106Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ubuntu设置全局代理">
+<meta name="twitter:description" content="之前有一篇文章用iptables做端口映射，实现了从外网直接ssh连接一台内网云主机，但即便这样，还是存在一些问题，譬如，apt仍旧无法访问外部源。
+至于原因哈，猜一个，因为前面配置端口转发的时候只映射了22端口，而更新软件源等，使用的是http的80端口，些许应该再配置下http的80端口、https的433端口……
+一不做二不休，直接在外网主机上用squid架设代理服务器，不就免去这一切乱七八">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> Ubuntu设置全局代理 · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Ubuntu设置全局代理
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年1月1日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+      <div class="post-toc" id="post-toc">
+        <h2 class="post-toc-title">文章目录</h2>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-5"><a class="toc-link" href="#2017-01-14补充"><span class="toc-text">2017-01-14补充</span></a></li></ol>
+        </div>
+      </div>
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>之前有一篇文章用iptables做端口映射，实现了从外网直接ssh连接一台内网云主机，但即便这样，还是存在一些问题，譬如，apt仍旧无法访问外部源。</p>
+<p>至于原因哈，猜一个，因为前面配置端口转发的时候只映射了22端口，而更新软件源等，使用的是http的80端口，些许应该再配置下http的80端口、https的433端口……</p>
+<p>一不做二不休，直接在外网主机上用squid架设代理服务器，不就免去这一切乱七八糟的事了吗？架设代理服务器的过程后面会补上（又给自己挖坑呢）<!--可以看[我的另一篇博客]()，当然是参考了[这篇文章]()-->。</p>
+<a id="more"></a>
+<p>配置好代理服务器后，自然要把内网主机的代理配置指向这台外网主机。谷歌了一下，大部分文章提到的3种办法。一是直接执行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">export http_proxy=“proxy_username:password@ip:port”</div></pre></td></tr></table></figure></p>
+<p>（这只针对当前会话有效）；二是把上述内容添加到~/.bashrc中（实现当前用户每次登录时生效）；三是安装一些第三方工具，类似于proxychain之类的。</p>
+<p>但做了配置之后（不过我只试验了前2种），的确可以使用curl、wget等访问http资源了，但apt还是无法访问外部源，而且配置生效的范围相对局限。这又如何解决呢？</p>
+<p>突然想到安装了gui的ubuntu，可以在系统设置中配置全局代理，遂找了个有gui的虚机试验了一把，果然发现配置生效后有两个文件发生了变化，打开具体看一眼，内容是这样滴<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"># /etc/environment</div><div class="line"></div><div class="line">http_proxy=&quot;http://192.168.128.129:3128/&quot;</div><div class="line">https_proxy=&quot;https://192.168.128.129:3128/&quot;</div><div class="line">ftp_proxy=&quot;ftp://192.168.128.129:3128/&quot;</div><div class="line">socks_proxy=&quot;socks://192.168.128.129:3128/&quot;</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"># /etc/apt/apt.conf</div><div class="line"></div><div class="line">Acquire::http::proxy &quot;http://192.168.128.129:3128/&quot;;</div><div class="line">Acquire::https::proxy &quot;https://192.168.128.129:3128/&quot;;</div><div class="line">Acquire::ftp::proxy &quot;ftp://192.168.128.129:3128/&quot;;</div><div class="line">Acquire::socks::proxy &quot;socks://192.168.128.129:3128/&quot;;</div></pre></td></tr></table></figure>
+<p>这么看来，前者配置的是系统全局代理服务器，后者则是针对apt做了单独的配置，<a href="http://wiki.ubuntu.org.cn/UbuntuHelp:AptGet/Howto/zh#.E4.B8.BAapt-get.E8.AE.BE.E7.BD.AEhttp.E4.BB.A3.E7.90.86" target="_blank" rel="external">这篇文章</a>也应征了这个说法（ubuntu 10.10以后apt代理从后一个文件中读取）。</p>
+<p>好了，将这两个文件新增的内容拷贝出来，贴到需要配置全局代理的内网主机的相同文件中去吧！</p>
+<h5 id="2017-01-14补充"><a href="#2017-01-14补充" class="headerlink" title="2017-01-14补充"></a>2017-01-14补充</h5><p>除了apt，发现mvn也不走系统全局代理（捂脸）……</p>
+<p>maven的代理配置位于setting.xml文件中的<proxy>节，看着修改下host和port就可以了，说起来也蛮简单的。</proxy></p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2017/01/02/install-ubuntu-on-mos/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">上美团云Ubuntu主机咯</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2017/01/01/install-mysql-server/">
+        <span class="next-text nav-default">搭建MySQL服务器</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2017/01/01/set-global-proxy-in-ubuntu/';
+        
+            this.page.identifier = '9030bc90-e3f3-11e6-90cf-edd5aedf4af4';
+        
+        this.page.title = 'Ubuntu设置全局代理';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="Ubuntu设置静态IP地址"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2016/12/25/set-static-ip-in-ubuntu/"/>
+
+
+<meta name="description" content="半年的实习就要结束咯～要回来干活咯～把荒废已久的博客捡起来先～
+老板给了个「小」项目，还没买云主机，先在线下用几台VMWare虚机搭建了一个相似的开发环境，然后就发现了个问题——几台虚机都由DHCP分配IP地址，重启时可能会改变，这样就会影响虚机间的通信，因此要给它们设置静态IP地址。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ubuntu设置静态IP地址">
+<meta property="og:url" content="http://www.lx1992.com.cn/2016/12/25/set-static-ip-in-ubuntu/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="半年的实习就要结束咯～要回来干活咯～把荒废已久的博客捡起来先～
+老板给了个「小」项目，还没买云主机，先在线下用几台VMWare虚机搭建了一个相似的开发环境，然后就发现了个问题——几台虚机都由DHCP分配IP地址，重启时可能会改变，这样就会影响虚机间的通信，因此要给它们设置静态IP地址。">
+<meta property="og:image" content="http://www.lx1992.com.cn/images/0a3f6965-5374-49cc-911d-4daa79341ece.png">
+<meta property="og:image" content="http://www.lx1992.com.cn/images/fe32e386-df43-4760-aaf3-a5213efc3a82.png">
+<meta property="og:updated_time" content="2017-01-26T19:34:37.891Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ubuntu设置静态IP地址">
+<meta name="twitter:description" content="半年的实习就要结束咯～要回来干活咯～把荒废已久的博客捡起来先～
+老板给了个「小」项目，还没买云主机，先在线下用几台VMWare虚机搭建了一个相似的开发环境，然后就发现了个问题——几台虚机都由DHCP分配IP地址，重启时可能会改变，这样就会影响虚机间的通信，因此要给它们设置静态IP地址。">
+<meta name="twitter:image" content="http://www.lx1992.com.cn/images/0a3f6965-5374-49cc-911d-4daa79341ece.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> Ubuntu设置静态IP地址 · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Ubuntu设置静态IP地址
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2016年12月25日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>半年的实习就要结束咯～要回来干活咯～把荒废已久的博客捡起来先～</p>
+<p>老板给了个「小」项目，还没买云主机，先在线下用几台VMWare虚机搭建了一个相似的开发环境，然后就发现了个问题——几台虚机都由DHCP分配IP地址，重启时可能会改变，这样就会影响虚机间的通信，因此要给它们设置静态IP地址。</p>
+<a id="more"></a>
+<p>首先要关闭VMWare的DHCP服务。打开VMWare网络编辑器，因为虚机采用了NAT方式联网，因此找到vmnet8下的use local DHCP service to distribute IP addresses to VMs选项，将其关闭。</p>
+<p><img src="/images/0a3f6965-5374-49cc-911d-4daa79341ece.png" alt=""></p>
+<p>记得打开NAT Settings界面看下vmnet8的网关，后面的配置中要用到，例如我这里是192.168.207.2。</p>
+<p><img src="/images/fe32e386-df43-4760-aaf3-a5213efc3a82.png" alt=""></p>
+<p>接着就可以修改虚机网卡的IP地址了。vim打开/etc/network/interface文件，可以看到下面的内容</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"># The loopback network interface</div><div class="line">auto lo</div><div class="line">iface lo inet loopback</div><div class="line"></div><div class="line"># The primary network interface</div><div class="line">auto ens33</div><div class="line">iface ens33 inet dhcp</div></pre></td></tr></table></figure>
+<p>其中的lo是本地回环，而ens33才是虚机的网卡。修改这个文件：将dhcp改成static，然后加上address、netmask、gateway三个字段，分别用于配置IP地址、子网掩码和网关，配置后类似于这样</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"># The loopback network interface</div><div class="line">auto lo</div><div class="line">iface lo inet loopback</div><div class="line"></div><div class="line"># The primary network interface</div><div class="line">auto ens33</div><div class="line">iface ens33 inet static</div><div class="line">address 192.168.207.128</div><div class="line">netmask 255.255.255.0</div><div class="line">gateway 192.168.207.2</div></pre></td></tr></table></figure>
+<p>最后还要修改DNS配置。网上的很多说法是修改/etc/resolv.conf文件，但是打开这个文件就会看到大大的一行</p>
+<blockquote>
+<p>DO NOT EDIT THIS FILE BY HAND – YOUR CHANGES WILL BE OVERWRITTEN</p>
+</blockquote>
+<p>哎，人家都让你别改了！</p>
+<p>正确的做法应该是修改/etc/resolvconf/resolv.conf.d下的文件。网上的说法是这个目录下有head、tail、base三个文件，但我这只有head和base两个，而且head文件同样标记了不要修改，base是一个空文件。</p>
+<p>将base改成下面这样（也就是加上一个或多个nameserver字段，图省事，直接拿了个114的dns）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">nameserver 114.114.114.114</div></pre></td></tr></table></figure></p>
+<p>最后别忘了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">/etc/inid.d/networking restart</div></pre></td></tr></table></figure></p>
+<p>重启下网络。OK，大功告成！</p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2016/12/30/port-mapping-by-iptables/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">用iptables实现端口映射</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2016/12/25/set-static-ip-in-ubuntu/';
+        
+            this.page.identifier = '150680b0-e3f1-11e6-bd56-c541e0046240';
+        
+        this.page.title = 'Ubuntu设置静态IP地址';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>

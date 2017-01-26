@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="搭建SonarQube「代码质量管理」服务"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/01/17/install-sonarqube-server/"/>
+
+
+<meta name="description" content="sonarqube是一个代码质量管理工具，同样是开源的，说白了其实它做的事也是“代码静态分析”，和安装在IDE中的findbugs、checkstyle等插件有几分类似。官方称其支持20+种语言，对java的支持更是不在话下。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="搭建SonarQube「代码质量管理」服务">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/01/17/install-sonarqube-server/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="sonarqube是一个代码质量管理工具，同样是开源的，说白了其实它做的事也是“代码静态分析”，和安装在IDE中的findbugs、checkstyle等插件有几分类似。官方称其支持20+种语言，对java的支持更是不在话下。">
+<meta property="og:updated_time" content="2017-01-26T20:00:38.899Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="搭建SonarQube「代码质量管理」服务">
+<meta name="twitter:description" content="sonarqube是一个代码质量管理工具，同样是开源的，说白了其实它做的事也是“代码静态分析”，和安装在IDE中的findbugs、checkstyle等插件有几分类似。官方称其支持20+种语言，对java的支持更是不在话下。">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> 搭建SonarQube「代码质量管理」服务 · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          搭建SonarQube「代码质量管理」服务
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年1月17日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+      <div class="post-toc" id="post-toc">
+        <h2 class="post-toc-title">文章目录</h2>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#下载"><span class="toc-text">下载</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#配置"><span class="toc-text">配置</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#sonar-properties"><span class="toc-text">sonar.properties</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#wrapper-conf"><span class="toc-text">wrapper.conf</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#启动"><span class="toc-text">启动</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#测试"><span class="toc-text">测试</span></a></li></ol>
+        </div>
+      </div>
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>sonarqube是一个代码质量管理工具，同样是<a href="https://github.com/SonarSource/sonarqube" target="_blank" rel="external">开源</a>的，说白了其实它做的事也是“代码静态分析”，和安装在IDE中的findbugs、checkstyle等插件有几分类似。官方称其支持20+种语言，对java的支持更是不在话下。</p>
+<a id="more"></a>
+<p>我也是在实习期间第一次接触到这个工具，公司里将它同jenkins这一持续集成工具整合，从而实现每每向git仓库提交代码就自动触发编码质量检查的目的。检查的结果呢，根据问题的类型和严重性，在其web界面上一目了然，老大快瞅瞅哪个程序猿儿欠下了哪些技术债[坏笑]。如果进一步和CI整合，还可以限制诸如代码质量达不到某个级别就不允许进一步操作等，从而确实提高编码质量。</p>
+<p>现在我也在自己的云主机上搭建一套sonarqube环境。首先要明确一点，sonarqube从整体上看分成两部分，server和scanner。其中在服务器上安装的为server部分，且server需要连接数据库来存储自身的配置和检查结果等、需要安装插件来实现对不同语言、不同VCS的支持等。至于scanner，那是运行在CI、IDE或者maven等项目管理工具上的，作用就是分析项目。</p>
+<h4 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h4><p>sonarqube在其<a href="https://www.sonarqube.org/downloads/" target="_blank" rel="external">官方网站</a>上就可以完整下载到，体积看上去不小，再看看最低硬件要求，实话说也蛮高的，我猜测可能和它包含了web服务、cs计算引擎、es全文索引三大件有关吧，下载完毕后解压到/opt目录即可。</p>
+<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p>sonarqube的配置文件位于./conf目录下，包括sonar.properties<br>和wrapper.conf两个，依次打开看看。</p>
+<h5 id="sonar-properties"><a href="#sonar-properties" class="headerlink" title="sonar.properties"></a>sonar.properties</h5><p>这个文件是sonarqube的核心配置文件了，可以/需要配置的东西还是不少的。粗略浏览一下，包括这么几个部分</p>
+<ul>
+<li>数据库</li>
+<li>Web服务器</li>
+<li>SSO鉴权</li>
+<li>计算引擎</li>
+<li>全文搜索引擎</li>
+<li>代理服务器</li>
+<li>日志</li>
+<li>其他杂项 &amp; 开发者选项</li>
+</ul>
+<p>受限于篇幅，本文参考官方教程，简单阐述一些必须的配置。首先自然是数据库老三样——URL、用户名和密码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">sonar.jdbc.username=sonarqube</div><div class="line">sonar.jdbc.password=password</div><div class="line">sonar.jdbc.url=jdbc:mysql://localhost:3306/sonarqube</div></pre></td></tr></table></figure></p>
+<p>其次是HTTP服务绑定的网卡和端口<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">sonar.web.host=0.0.0.0</div><div class="line">sonar.web.port=9000</div></pre></td></tr></table></figure></p>
+<p>最后是官方建议的，对Web服务所在的jvm启用-server参数，据说可以提高性能<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sonar.web.javaOpts=-server</div></pre></td></tr></table></figure></p>
+<p>哦对了，数据目录和日志目录不必多说，看过我前面几篇博客都应该发现我将所有与业务的这两个目录统一放在/data下了。</p>
+<p>至于其他的配置项，由于配置文件里的说明十分详细，有需要的同学可以按着说明调整相关的配置。</p>
+<h5 id="wrapper-conf"><a href="#wrapper-conf" class="headerlink" title="wrapper.conf"></a>wrapper.conf</h5><p>这个文件配置的是Java Service Wrapper，它是啥大伙自行谷歌去。</p>
+<p>虽然这个文件标明了，除了JVM路径以外的内容不要修改，但毕竟其中包含了wrapper的日志目录，而且默认的配置是大小不限制、文件数不限制，如果访问量大的话，不可避免地会在程序目录下打出太多的日志，所以还是把这个改一下吧。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">wrapper.logfile=/data/logs/sonarqube/sonar.log</div><div class="line"></div><div class="line"># 下面2行默认是注释掉的，相应的特性也被禁用了，根据需要修改</div><div class="line">wrapper.logfile.maxsize=0</div><div class="line">wrapper.logfile.maxfiles=0</div></pre></td></tr></table></figure></p>
+<h4 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h4><p>进入./bin目录，可以看到sonarqube支持的各种操作系统中所对应的不同启动程序，以我们的linux-x86_64为例，运行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">./sonar.sh start</div></pre></td></tr></table></figure></p>
+<p>即可启动sonarqube。通过浏览器访问server的url就可以看到sonarqube的主界面了（当然第一次访问还需要进行一些初始化工作）。</p>
+<p>官方的教程中还提到了<a href="https://docs.sonarqube.org/display/SONAR/Running+SonarQube+as+a+Service+on+Linux" target="_blank" rel="external">如何将sonarqube配置成系统服务</a>，</p>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><p>注意了，刚才安装和启动的那只是server部分，前面说过，server一般用来查看分析的结果并做相应的处理，我们还需要scanner来进行代码的分析。<a href="https://docs.sonarqube.org/display/SONAR/Analyzing+Source+Code" target="_blank" rel="external">官方教程</a>中明确了scanner的6种使用方式。因为我们项目是用maven管理的，又暂时没有接入jenkins，所以这里我们直接通过sonarqube的maven插件进行编码质量检查，顺便做个示范。</p>
+<p>首先要在项目的pom文件中加上sonarqube的maven插件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;plugin&gt;</div><div class="line">  &lt;groupId&gt;org.sonarsource.scanner.maven&lt;/groupId&gt;</div><div class="line">  &lt;artifactId&gt;sonar-maven-plugin&lt;/artifactId&gt;</div><div class="line">  &lt;version&gt;3.2&lt;/version&gt;</div><div class="line">&lt;/plugin&gt;</div></pre></td></tr></table></figure></p>
+<p>这个插件只需要配置一个属性，那就是我们前边部署的server的url<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;properties&gt;</div><div class="line">  &lt;sonar.host.url&gt;</div><div class="line">    http://host:port</div><div class="line">  &lt;/sonar.host.url&gt;</div><div class="line">&lt;/properties&gt;</div></pre></td></tr></table></figure></p>
+<p>然后就可以进行编码质量检查了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mvn clean verify sonar:sonar</div></pre></td></tr></table></figure></p>
+<p>用不了多长时间结果就会被上传，此时用浏览器打开sonarqube的server端，就可以看到代码分析的结果了，各种不规范、坏味道一目了然。</p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2017/01/17/install-redmine-server/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">搭建Redmine「项目管理」服务</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2017/01/15/install-redis-server/">
+        <span class="next-text nav-default">搭建Redis服务器</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2017/01/17/install-sonarqube-server/';
+        
+            this.page.identifier = '9f04ca10-e3f6-11e6-8c06-0f0dc738c9fa';
+        
+        this.page.title = '搭建SonarQube「代码质量管理」服务';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>
