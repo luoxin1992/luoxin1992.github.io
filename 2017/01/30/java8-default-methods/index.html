@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="Java8学习之默认方法"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/01/30/java8-default-methods/"/>
+
+
+<meta name="description" content="这部分是关于的Java8在接口中定义默认方法和静态方法的。实话说，我一时没看出来这个和Lambda表达式有什么关系，也不知道为什么书上会安排在同一章，我还是拆来来吧。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java8学习之默认方法">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/01/30/java8-default-methods/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="这部分是关于的Java8在接口中定义默认方法和静态方法的。实话说，我一时没看出来这个和Lambda表达式有什么关系，也不知道为什么书上会安排在同一章，我还是拆来来吧。">
+<meta property="og:updated_time" content="2017-01-29T16:43:52.479Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java8学习之默认方法">
+<meta name="twitter:description" content="这部分是关于的Java8在接口中定义默认方法和静态方法的。实话说，我一时没看出来这个和Lambda表达式有什么关系，也不知道为什么书上会安排在同一章，我还是拆来来吧。">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> Java8学习之默认方法 · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Java8学习之默认方法
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年1月30日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+      <div class="post-toc" id="post-toc">
+        <h2 class="post-toc-title">文章目录</h2>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#默认方法"><span class="toc-text">默认方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#静态方法"><span class="toc-text">静态方法</span></a></li></ol>
+        </div>
+      </div>
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>这部分是关于的Java8在接口中定义默认方法和静态方法的。实话说，我一时没看出来这个和Lambda表达式有什么关系，也不知道为什么书上会安排在同一章，我还是拆来来吧。</p>
+<a id="more"></a>
+<h4 id="默认方法"><a href="#默认方法" class="headerlink" title="默认方法"></a>默认方法</h4><p>同样在Java8以前，接口当中是不会存在任何方法实现的，在某种程度上可以看做纯抽象的的方法。</p>
+<p>这就有一个问题，想象有一个接口I，经过若干次迭代，它已经有了A、B、C、D……N个实现类，突然有一天，接口I中不得不新增一个方法，然后它的N个实现类要一一实现这个新的方法吗？可不可以让接口中这个新的方法提供一个默认实现呢？</p>
+<p>恐怕我们很容易联想到早些年AWT中的事件模型，例如窗口事件java.awt.event.WindowListener，它有7个方法未实现，而很可能我们只需要点击关闭窗口时弹出一个确认对话框一个功能……于是就有了java.awt.event.WindowAdapter这么个东西，把每个方法都做了一个空的实现。这样做当然不是不可以，但利用Java8的默认方法要简单不少，用default关键字声明默认方法即可，至少不用定义Adapter类了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">public interface Lived &#123;</div><div class="line">    default String getDescription() &#123;</div><div class="line">        return &quot;有生命的&quot;;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>不过新的问题又出现了，Java是允许接口多继承的，万一接口A、B都对某个共享方法X提供了默认实现，偏偏接口C又同时继承了接口A、B怎么办？是不是突然有种当年学C++时解决菱形继承的既视感？莫方，Java8对这种问题的解决办法简单粗暴——开发人员自己决定！也就是说，你必须写代码来决定，究竟是自己再重写一次方法X，还是从A、B的实现中选一个。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">public interface Named &#123;</div><div class="line">    default String getDescription() &#123;</div><div class="line">        return &quot;有名字的&quot;;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">public class Human implements Lived, Named &#123;</div><div class="line">    //必须重写冲突的getDescription方法</div><div class="line">    @Override</div><div class="line">    public String getDescription() &#123;</div><div class="line">        return &quot;人类&quot;;</div><div class="line">        //或可以指定某个父接口的默认实现</div><div class="line">        //return Lived.super.getDescription();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>再换一种情况，假设类C继承了类B又实现了接口A，偏偏接口A对方法X提供了默认实现，类B覆盖了这个实现，在C不重写方法X的情况下，生效的将会是类B中的实现，接口A中的默认实现会被忽略，这称为“类优先”原则。</p>
+<p>这就有问题了，而且我个人感觉不是很容易被察觉到：接口也是一种特殊的类，它也是继承Object类的，根据类优先原则，我们就永远不可能为Object类中的方法定义默认实现。</p>
+<h4 id="静态方法"><a href="#静态方法" class="headerlink" title="静态方法"></a>静态方法</h4><p>不知道你有没有被诸如Collection/Collections这样长得贼像的“兄弟”坑过呢？反正我是有，有时候着急了，或者敲快了，还对着错误一头雾水的。其实，这两家伙，前者是接口，后者是类，而且后者为前者提供一些工具方法或者工厂方法。</p>
+<p>Java8开始，不仅允许在接口中添加默认方法，还允许添加静态方法了！不知道可不可以认为像Collections这样的类没有太大用处了呢？</p>
+<p>允许这么做是有原因的。即使是默认方法，也需要通过Lambda表达式实例化函数式接口，或者某个实现了这个接口的类的实例才可以访问到，这让静态工厂方法们情何以堪啊？当然下面这个例子有点随意了=.=<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">public interface Lived &#123;</div><div class="line">    static boolean instanceOf(Object obj) &#123;</div><div class="line">        return obj instanceof Lived;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2017/01/29/java8-lambda-expression/">
+        <span class="next-text nav-default">Java8学习之Lambda表达式</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2017/01/30/java8-default-methods/';
+        
+            this.page.identifier = 'c603afb0-e63e-11e6-9e99-81d46abf3428';
+        
+        this.page.title = 'Java8学习之默认方法';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>

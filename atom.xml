@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.lx1992.com.cn/"/>
-  <updated>2017-01-26T20:01:35.901Z</updated>
+  <updated>2017-01-29T16:43:52.479Z</updated>
   <id>http://www.lx1992.com.cn/</id>
   
   <author>
@@ -14,6 +14,80 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Java8学习之默认方法</title>
+    <link href="http://www.lx1992.com.cn/2017/01/30/java8-default-methods/"/>
+    <id>http://www.lx1992.com.cn/2017/01/30/java8-default-methods/</id>
+    <published>2017-01-29T16:19:56.000Z</published>
+    <updated>2017-01-29T16:43:52.479Z</updated>
+    
+    <content type="html"><![CDATA[<p>这部分是关于的Java8在接口中定义默认方法和静态方法的。实话说，我一时没看出来这个和Lambda表达式有什么关系，也不知道为什么书上会安排在同一章，我还是拆来来吧。</p>
+<a id="more"></a>
+<h4 id="默认方法"><a href="#默认方法" class="headerlink" title="默认方法"></a>默认方法</h4><p>同样在Java8以前，接口当中是不会存在任何方法实现的，在某种程度上可以看做纯抽象的的方法。</p>
+<p>这就有一个问题，想象有一个接口I，经过若干次迭代，它已经有了A、B、C、D……N个实现类，突然有一天，接口I中不得不新增一个方法，然后它的N个实现类要一一实现这个新的方法吗？可不可以让接口中这个新的方法提供一个默认实现呢？</p>
+<p>恐怕我们很容易联想到早些年AWT中的事件模型，例如窗口事件java.awt.event.WindowListener，它有7个方法未实现，而很可能我们只需要点击关闭窗口时弹出一个确认对话框一个功能……于是就有了java.awt.event.WindowAdapter这么个东西，把每个方法都做了一个空的实现。这样做当然不是不可以，但利用Java8的默认方法要简单不少，用default关键字声明默认方法即可，至少不用定义Adapter类了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">public interface Lived &#123;</div><div class="line">    default String getDescription() &#123;</div><div class="line">        return &quot;有生命的&quot;;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>不过新的问题又出现了，Java是允许接口多继承的，万一接口A、B都对某个共享方法X提供了默认实现，偏偏接口C又同时继承了接口A、B怎么办？是不是突然有种当年学C++时解决菱形继承的既视感？莫方，Java8对这种问题的解决办法简单粗暴——开发人员自己决定！也就是说，你必须写代码来决定，究竟是自己再重写一次方法X，还是从A、B的实现中选一个。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">public interface Named &#123;</div><div class="line">    default String getDescription() &#123;</div><div class="line">        return &quot;有名字的&quot;;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">public class Human implements Lived, Named &#123;</div><div class="line">    //必须重写冲突的getDescription方法</div><div class="line">    @Override</div><div class="line">    public String getDescription() &#123;</div><div class="line">        return &quot;人类&quot;;</div><div class="line">        //或可以指定某个父接口的默认实现</div><div class="line">        //return Lived.super.getDescription();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>再换一种情况，假设类C继承了类B又实现了接口A，偏偏接口A对方法X提供了默认实现，类B覆盖了这个实现，在C不重写方法X的情况下，生效的将会是类B中的实现，接口A中的默认实现会被忽略，这称为“类优先”原则。</p>
+<p>这就有问题了，而且我个人感觉不是很容易被察觉到：接口也是一种特殊的类，它也是继承Object类的，根据类优先原则，我们就永远不可能为Object类中的方法定义默认实现。</p>
+<h4 id="静态方法"><a href="#静态方法" class="headerlink" title="静态方法"></a>静态方法</h4><p>不知道你有没有被诸如Collection/Collections这样长得贼像的“兄弟”坑过呢？反正我是有，有时候着急了，或者敲快了，还对着错误一头雾水的。其实，这两家伙，前者是接口，后者是类，而且后者为前者提供一些工具方法或者工厂方法。</p>
+<p>Java8开始，不仅允许在接口中添加默认方法，还允许添加静态方法了！不知道可不可以认为像Collections这样的类没有太大用处了呢？</p>
+<p>允许这么做是有原因的。即使是默认方法，也需要通过Lambda表达式实例化函数式接口，或者某个实现了这个接口的类的实例才可以访问到，这让静态工厂方法们情何以堪啊？当然下面这个例子有点随意了=.=<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">public interface Lived &#123;</div><div class="line">    static boolean instanceOf(Object obj) &#123;</div><div class="line">        return obj instanceof Lived;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;这部分是关于的Java8在接口中定义默认方法和静态方法的。实话说，我一时没看出来这个和Lambda表达式有什么关系，也不知道为什么书上会安排在同一章，我还是拆来来吧。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Java8" scheme="http://www.lx1992.com.cn/categories/java8/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Java8学习之Lambda表达式</title>
+    <link href="http://www.lx1992.com.cn/2017/01/29/java8-lambda-expression/"/>
+    <id>http://www.lx1992.com.cn/2017/01/29/java8-lambda-expression/</id>
+    <published>2017-01-29T11:23:04.000Z</published>
+    <updated>2017-01-29T16:43:52.463Z</updated>
+    
+    <content type="html"><![CDATA[<p>Java8，准确地说应该是JavaSE 8，发布挺长时间了（废话！Java9今年上半年都要出了！），但除了实习那会听同事做了场分享，自己一直没有系统地学习一下。这些天整了本《写给大忙人看的JavaSE 8》，抽点时间读一读，这个系列的博客当是读书笔记了。这第一部分是lambda表达式。</p>
+<a id="more"></a>
+<h4 id="何为lambda表达式"><a href="#何为lambda表达式" class="headerlink" title="何为lambda表达式"></a>何为lambda表达式</h4><p><em>lambda表达式是一段可以传递的代码。</em></p>
+<p>过去在多线程、回调等情境（大多是内部类？）下，我们都会把一段代码传递给其他调用者，而这段代码稍后才会被调用。而纯面向对象的Java是不支持传递代码块的，但在Java8中，可以。</p>
+<p>第一个lambda表达式，包括两部分——一是代码块本身，二是传递给代码块的参数，注意lambda的返回类型永远是推导来的，不需要显式指定。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">// 格式：参数+箭头+表达式</div><div class="line">(int a, int b) -&gt; foo.bar(a, b);</div></pre></td></tr></table></figure></p>
+<p>但lambda的格式也不是说就这么死板，有几种特殊情况：如果代码块不是一个表达式（多行代码、处理异常等），那么就用大括号包裹起来；如果没有参数，那么将小括号置空；如果参数的类型是可以推导的，那么参数类型可以省略；如果有且只有一个可以被推导的参数，那么甚至可以省略小括号。</p>
+<h4 id="lambda表达式能做什么"><a href="#lambda表达式能做什么" class="headerlink" title="lambda表达式能做什么"></a>lambda表达式能做什么</h4><p><em>lambda表达式有且只能用于函数式接口转换</em></p>
+<p>对只包含一个抽象方法的接口，我们可以用lambda表达式来创建该接口的实例，这种接口也被称作函数是接口。而所谓“一个抽象方法”，则是因为Java8允许在接口中定义非抽象方法。</p>
+<p>以java.util.Comparator接口为例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">@FunctionalInterface</div><div class="line">public interface Comparator&lt;T&gt; &#123;</div><div class="line">    //抽象方法</div><div class="line">    int compare(T var1, T var2);</div><div class="line"></div><div class="line">    //Object类中有实现，不是抽象方法</div><div class="line">    boolean equals(Object var1);</div><div class="line"></div><div class="line">    //有默认实现，不是抽象方法</div><div class="line">    default Comparator&lt;T&gt; reversed() &#123;</div><div class="line">        return Collections.reverseOrder(this);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    //以下省略</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>符合上面对函数式接口的定义，因此Comparator是函数式接口，可以通过lambda表达式实例化<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Comparator comparator = (a, b) -&gt; foo.bar(a, b);</div></pre></td></tr></table></figure></p>
+<p>至于注解@FunctionalInterface，意识可以让编译器帮着检查这个接口符不符合函数式接口的定义，二是生成JavaDoc时对这个接口有一个标记，因此推荐使用。</p>
+<h4 id="方法引用"><a href="#方法引用" class="headerlink" title="方法引用"></a>方法引用</h4><p>对于类似这样的lambda表达式，我们有更方便的写法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">//下面两者是等价的</div><div class="line">(x) -&gt; foo.bar(x)</div><div class="line">foo::bar</div></pre></td></tr></table></figure></p>
+<p>实际上就是将foo这个对象中的boo方法，整个传递给某个函数式接口。方法引用又分成三类</p>
+<ul>
+<li>对象::实例方法</li>
+<li>类::静态方法</li>
+<li>类::实例方法</li>
+</ul>
+<p>前两个没有什么特殊之处，注意对象可以是自己或者自己的父类（即this或super），但最后一个，类如何调用实例方法呢？实践后会发现，这种情况下总要求函数式接口中那个抽象方法的参数要比引用的方法的参数多一个，而且这多出来的参数就是类的实例。</p>
+<p>更进一步地，我们还可以引用类的构造方法，不过方法名不是我们在反射时见到的<init>，就是简单明了的new了～再特殊一点，如果引用的是数组的构造方法，则需要隐含这一个参数，即数组长度<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">//引用类的实例方法，下面两者也是等价的</div><div class="line">String::equals</div><div class="line">(x, y) -&gt; x.equals(y)</div><div class="line"></div><div class="line">//引用构造方法</div><div class="line">String::new</div><div class="line">int[]::new</div></pre></td></tr></table></figure></init></p>
+<h4 id="捕获"><a href="#捕获" class="headerlink" title="捕获"></a>捕获</h4><p>在Java8以前，这样的代码会产生编译错误：要求将count声明为final类型，因为我们在一个内部类中引用了外部类的局部变量count，很可能当内部类要用到count时，外部类已经不存在了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">public void runnableWithoutLambda(int count) &#123;</div><div class="line">    Runnable runnable = new Runnable() &#123;</div><div class="line">        @Override</div><div class="line">        public void run() &#123;</div><div class="line">            for (int i = 0; i &lt; count; i++) &#123;</div><div class="line">                System.out.println(i);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line">    new Thread(runnable).start();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>但到了Java8，这样做却被“允许”了，当然不可能是无条件的放开，只是不一定要显式地声明final——“等效于final”即可。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">public void runnableWithLambda(int count) &#123;</div><div class="line">    Runnable runnable = () -&gt; &#123;</div><div class="line">        for (int i = 0; i &lt; count; i++) &#123;</div><div class="line">            System.out.println(i);</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line">    new Thread(runnable).start();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>事实上，像count这样既不是lambda表达式的参数，也不是定义在lambda表达式的代码块中的变量，被称为“自有变量”，而这个特性被称为“捕获”，含有自有变量的代码块被称为“闭包”。为了实现这个特性，lambda表达式会存储这些变量，既然这些变量等效于final，它们就不允许被修改，即使编译器不报错，尤其在多线程条件下，结果是完全不可预估的。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Java8，准确地说应该是JavaSE 8，发布挺长时间了（废话！Java9今年上半年都要出了！），但除了实习那会听同事做了场分享，自己一直没有系统地学习一下。这些天整了本《写给大忙人看的JavaSE 8》，抽点时间读一读，这个系列的博客当是读书笔记了。这第一部分是lambda表达式。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Java8" scheme="http://www.lx1992.com.cn/categories/java8/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>搭建Redmine「项目管理」服务</title>
@@ -278,7 +352,7 @@
     
     <content type="html"><![CDATA[<p>项目中许多地方都需要邮件通知功能。以开发工具为例，譬如，Gogs在版本库变化时可以通知团队成员、Redmine在项目（任务）进度变化时也有类似的功能，更进一步地，程序上线后将会配置相应的JVM监控，以便于发生线上故障时（程序抛出非预期的异常等）及时通知开发者处理。</p>
 <a id="more"></a>
-<p>但是，有几个问题需要留意。首先是如何发送邮件？自己搭建一套完整的邮件服务？真的这样做的话，可以以类似<a href="&#109;&#97;&#105;&#108;&#x74;&#x6f;&#58;&#x6d;&#x61;&#x69;&#x6c;&#x40;&#109;&#x79;&#100;&#x6f;&#x6d;&#97;&#x69;&#x6e;&#46;&#x63;&#x6f;&#109;">&#x6d;&#x61;&#x69;&#x6c;&#x40;&#109;&#x79;&#100;&#x6f;&#x6d;&#97;&#x69;&#x6e;&#46;&#x63;&#x6f;&#109;</a>的名义发送邮件，看上去是逼格满满，可就算不考虑这个操作的复杂性，在这个垃圾邮件泛滥的时代，十有八九这种自己发送的邮件会面临各种限制。再者，更现实一点，这些程序都运行在内网主机上，如何向外部发送邮件呢？</p>
+<p>但是，有几个问题需要留意。首先是如何发送邮件？自己搭建一套完整的邮件服务？真的这样做的话，可以以类似<a href="&#x6d;&#97;&#105;&#108;&#116;&#111;&#x3a;&#109;&#x61;&#105;&#108;&#64;&#x6d;&#x79;&#100;&#111;&#x6d;&#97;&#105;&#110;&#x2e;&#x63;&#111;&#x6d;">&#109;&#x61;&#105;&#108;&#64;&#x6d;&#x79;&#100;&#111;&#x6d;&#97;&#105;&#110;&#x2e;&#x63;&#111;&#x6d;</a>的名义发送邮件，看上去是逼格满满，可就算不考虑这个操作的复杂性，在这个垃圾邮件泛滥的时代，十有八九这种自己发送的邮件会面临各种限制。再者，更现实一点，这些程序都运行在内网主机上，如何向外部发送邮件呢？</p>
 <p>其实，使用邮件中继转发（relay）服务就可以完全解决上面这些所谓的“问题”。邮件中继转发，简单地说，就是邮件的最终递送仍旧由外部SMTP服务完成，163、QQ、Gmail什么的都可以，他们不是更专业吗？而我们的邮件服务器只是扮演一个代理的作用而已。</p>
 <p>肩负邮件中继转发这一使命的，也就是本文的主角——Postfix。想要详细学习了解的同学可以戳<a href="https://en.wikipedia.org/wiki/postfix_(software" target="_blank" rel="external">这里</a>)。在本例中，我们的程序将要发送的邮件交给Postfix，然后就没有然后了，完全不知道，也不需要知道邮件最后怎么样了。而收到邮件的Postfix，就像我们在邮件客户端（Foxmail、Thunderbird等）里点击“发送”按钮一般，将邮件交由配置好的外部SMTP服务。</p>
 <p>下面直接介绍开始配置的过程。</p>
