@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="Java8学习之Stream API"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/02/09/java8-the-stream-api/"/>
+
+
+<meta name="description" content="Java8在集合框架中添加了Stream API。Stream API的作用也是处理集合中的元素，但和传统的迭代器相比，应该说在性能上更具优势。Stream的使用分成3个步骤。
+
+创建一个Stream
+描述要做什么，即指定一个或多个将一个Stream转化为另一个Stream的中间操作
+要求产生结果，即使用终止操作">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java8学习之Stream API">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/02/09/java8-the-stream-api/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="Java8在集合框架中添加了Stream API。Stream API的作用也是处理集合中的元素，但和传统的迭代器相比，应该说在性能上更具优势。Stream的使用分成3个步骤。
+
+创建一个Stream
+描述要做什么，即指定一个或多个将一个Stream转化为另一个Stream的中间操作
+要求产生结果，即使用终止操作">
+<meta property="og:updated_time" content="2017-02-16T09:14:22.399Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java8学习之Stream API">
+<meta name="twitter:description" content="Java8在集合框架中添加了Stream API。Stream API的作用也是处理集合中的元素，但和传统的迭代器相比，应该说在性能上更具优势。Stream的使用分成3个步骤。
+
+创建一个Stream
+描述要做什么，即指定一个或多个将一个Stream转化为另一个Stream的中间操作
+要求产生结果，即使用终止操作">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> Java8学习之Stream API · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Java8学习之Stream API
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年2月9日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+      <div class="post-toc" id="post-toc">
+        <h2 class="post-toc-title">文章目录</h2>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#创建Stream"><span class="toc-text">创建Stream</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Stream的中间操作"><span class="toc-text">Stream的中间操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Optional操作"><span class="toc-text">Optional操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Stream的终止操作"><span class="toc-text">Stream的终止操作</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#聚合"><span class="toc-text">聚合</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#收集"><span class="toc-text">收集</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#分组和分片"><span class="toc-text">分组和分片</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#原始类型流"><span class="toc-text">原始类型流</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#并行流"><span class="toc-text">并行流</span></a></li></ol>
+        </div>
+      </div>
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>Java8在集合框架中添加了Stream API。Stream API的作用也是处理集合中的元素，但和传统的迭代器相比，应该说在性能上更具优势。Stream的使用分成3个步骤。</p>
+<ol>
+<li>创建一个Stream</li>
+<li>描述要做什么，即指定一个或多个将一个Stream转化为另一个Stream的<em>中间操作</em></li>
+<li>要求产生结果，即使用<em>终止操作</em><a id="more"></a>
+</li>
+</ol>
+<h4 id="创建Stream"><a href="#创建Stream" class="headerlink" title="创建Stream"></a>创建Stream</h4><p>Java8中，不单是所有集合的实现均提供了stream()方法，常用的还包括：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">//使用Collection接口的stream方法</div><div class="line">List&lt;String&gt; list = new ArrayList&lt;&gt;();</div><div class="line">list.add(&quot;Hello World&quot;);</div><div class="line">Stream&lt;String&gt; stream1 = list.stream();</div><div class="line"></div><div class="line">//使用Stream.of静态创建流</div><div class="line">Stream&lt;String&gt; stream2 = Stream.of(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;8&quot;, &quot;9&quot;);</div><div class="line"></div><div class="line">//从数组转换Stream</div><div class="line">String[] array = new String[]&#123;&quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;8&quot;, &quot;9&quot;&#125;;</div><div class="line">Stream&lt;String&gt; stream3 = Arrays.stream(array);</div><div class="line"></div><div class="line">//创建空的Stream</div><div class="line">Stream&lt;String&gt; stream4 = Stream.empty();</div><div class="line"></div><div class="line">//创建无限长度的Stream(含有无限多个随机数)</div><div class="line">Stream&lt;Double&gt; stream5 = Stream.generate(Math::random);</div><div class="line"></div><div class="line">//创建无限长度的Stream(含有无穷递增数列)</div><div class="line">Stream&lt;Integer&gt; stream6 = Stream.iterate(0, (val) -&gt; val + 1);</div></pre></td></tr></table></figure></p>
+<p>也就是说，除了从集合转换，我们还可以静态创建，甚至直接生成可能长度都是无限的Stream。但是，Stream本身并不存储其中的元素，这也就是为什么可以有长度无限的Stream，真正的存储依赖其底层集合，或者动态产生。</p>
+<h4 id="Stream的中间操作"><a href="#Stream的中间操作" class="headerlink" title="Stream的中间操作"></a>Stream的中间操作</h4><p>常用的Stream中间操作包括<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">//过滤出包含某个特定条件的所有元素</div><div class="line">Stream&lt;String&gt; filter = stream.filter(word -&gt; word.length() &gt; 5);</div><div class="line">//对流中值进行某种形式的转化</div><div class="line">Stream&lt;Integer&gt; map = stream.map(String::length);</div><div class="line">//提取子流：裁剪到指定长度</div><div class="line">Stream&lt;String&gt; limit = stream.limit(5);</div><div class="line">//提取子流：跳过前面若干元素</div><div class="line">Stream&lt;String&gt; skip = stream.skip(5);</div><div class="line">//连接两个流</div><div class="line">Stream&lt;String&gt; concat = Stream.concat(Stream.of(&quot;Hello&quot;), Stream.of(&quot;World&quot;));</div><div class="line">//对流中的元素调用某个方法，然后返回同样的流</div><div class="line">Stream&lt;String&gt; peek = stream.peek(System.out::println);</div><div class="line">//对流中元素去重</div><div class="line">Stream&lt;String&gt; distinct = stream.distinct();</div><div class="line">//对流中元素排序</div><div class="line">Stream&lt;String&gt; sorted = stream.sorted(Comparator.reverseOrder());</div></pre></td></tr></table></figure></p>
+<p>其中最为关键的2种操作当属<em>filter</em>和<em>map</em>方法。前者传入一个从T到boolean的方法，它会产生一个只包含符合特定条件之元素的新流；后者传入一个从T到R的方法，会在流中的每个元素上执行传入的代码以完成转化；与map方法类似的还有一个<em>flatMap</em>方法，它的背后另有一套复杂理论，不是Stream的专属，但在流中，它的作用是将一个包含多个流的流展开为一个流，即从Stream<stream<t>&gt;到Stream<t>。</t></stream<t></p>
+<p>这里对应Stream的第2个特点：Stream操作不会改变原Stream，而是返回一个持有操作结果的新Stream。</p>
+<h4 id="Optional操作"><a href="#Optional操作" class="headerlink" title="Optional操作"></a>Optional操作</h4><p>在Stream终止操作之前呢，插一段关于Optional的。</p>
+<p>所谓Optional，和它的字面意思一样，是对一个值的封装，既然是“可选的”，那么封装的这个值就有可能不存在，但是Optional不会返回null，因此<em>相对来说</em>更安全。为什么是相对来说呢？因为如果只是用get()和ifPresent()两个方法来取出Optional封装的值，以及判断Optional是否封装了值，未免太生硬了，而且还是避免不了NPE。</p>
+<p>首先如何创建Optional呢？使用of()和empty()方法，但这段逻辑Java8已经帮我们封装出了一个ofNullable()方法。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">private static Optional&lt;String&gt; getStringOptional(String str) &#123;</div><div class="line">    //如果str为null，返回空的Optional，否则返回封装了str的Optional</div><div class="line">    //完全等价于 return Optional.ofNullable(str);</div><div class="line">    return str == null ? Optional.empty() : Optional.of(str);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>其次如何使用Optional呢？使用ifPresent()和orElse(T)/orElseGet|Throw()方法。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">//如果Optional中有值，就执行System.out::println</div><div class="line">getStringOptional(null).ifPresent(System.out::println);</div><div class="line">getStringOptional(&quot;ABC&quot;).ifPresent(System.out::println);</div><div class="line">//如果Optional中没有值，就代换成空串/执行某个方法获取值/抛出异常</div><div class="line">getStringOptional(null).orElse(&quot;&quot;);</div><div class="line">getStringOptional(null).orElseGet(() -&gt; String.valueOf(System.currentTimeMillis()));</div><div class="line">getStringOptional(null).orElseThrow(NoSuchElementException::new);</div></pre></td></tr></table></figure></p>
+<p>另外Optional也提供了map()和flatMap()方法，用途和Stream中是一样的，我们可以把Optional想象成一个长度非0即1的Stream，这样理解起来就会容易有一些。</p>
+<h4 id="Stream的终止操作"><a href="#Stream的终止操作" class="headerlink" title="Stream的终止操作"></a>Stream的终止操作</h4><p>Stream的终止操作相对前面两者要复杂许多，将分成几个部分。这里提前给出流的第3个特点：操作可能会被延迟执行，意思是说前边的中间操作，看上去像是调用了一个或多个方法，但它们并不是立即就被执行的，而是要等到终止操作到来时才会被执行。</p>
+<h6 id="聚合"><a href="#聚合" class="headerlink" title="聚合"></a>聚合</h6><p>所谓聚合操作，就是以某种形式，将流中的元素组合为一个，使用reduce()方法。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">Stream&lt;Integer&gt; stream1 = Stream.iterate(1, val -&gt; val + 1).limit(10);</div><div class="line">//聚合流的第一种形式，等价于sum=1, sum+=2, sum+=3...</div><div class="line">Optional&lt;Integer&gt; sum1 = stream1.reduce(Integer::sum);</div><div class="line">//聚合流的第二种形式，等价于sum=0, sum+=1, sum+=2...</div><div class="line">Integer sum2 = stream1.reduce(0, Integer::sum);</div><div class="line"></div><div class="line">Stream&lt;String&gt; stream2 = Stream.of(&quot;0&quot;, &quot;12&quot;, &quot;345&quot;, &quot;6789&quot;);</div><div class="line">//聚合流的第三种形式</div><div class="line">Integer sum3 = stream2.reduce(0, (sum, word) -&gt; sum += word.length(), Integer::sum);</div></pre></td></tr></table></figure></p>
+<p>聚合最简单的实现就是从流的前两个元素开始，或者从一个给定的值和流的第一个元素开始，不断将聚合函数应用到流中的其他元素上。第三种形式相对特殊一些，本例是求String流中各个字符串的总长度，但sum+=word.length()不满足BinaryOperator的定义（一个满足(T, T) -&gt; T的函数）。</p>
+<p>Java8另外提供了几个简便，但是常用的reduce操作。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">//返回流中元素个数</div><div class="line">Long count = stream1.count();</div><div class="line">//返回流中元素最小值</div><div class="line">Optional&lt;Integer&gt; min = stream1.min(Integer::compareTo);</div><div class="line">//返回流中元素最大值</div><div class="line">Optional&lt;Integer&gt; max = stream1.max(Integer::compareTo);</div><div class="line">//返回流中满足指定条件的第一个元素</div><div class="line">Optional&lt;Integer&gt; findFirst = stream1.filter(val -&gt; val &gt; 5).findFirst();</div><div class="line">//返回流中满足指定条件的任意一个元素(并行计算)</div><div class="line">Optional&lt;Integer&gt; findAny = stream1.parallel().filter(val -&gt; val &gt; 5).findAny();</div><div class="line">//返回返回流中是否有元素满足指定条件(并行计算)</div><div class="line">Boolean anyMatch = stream1.parallel().anyMatch(val -&gt; val &gt; 5);</div><div class="line">//返回返回流中是否全部元素满足指定条件</div><div class="line">Boolean allMatch = stream1.allMatch(val -&gt; val &gt; 5);</div><div class="line">//返回返回流中是否没有元素满足指定条件</div><div class="line">Boolean noneMatch = stream1.noneMatch(val -&gt; val &gt; 100);</div></pre></td></tr></table></figure></p>
+<h6 id="收集"><a href="#收集" class="headerlink" title="收集"></a>收集</h6><p>收集结果一般用在对流进行一番处理之后再来访问流中的元素。除了传统的iterator()方法可以返回这个流的迭代器，以及前文中使用过的toArray()方法将这个流转换成一个数组，Stream提供了collect()方法用于将元素收集起来<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">Stream&lt;Integer&gt; stream = Stream.iterate(1, val -&gt; val + 1).limit(10);</div><div class="line">//收集到ArrayList中</div><div class="line">//完全等价于 stream.collect(Collectors.toCollection(ArrayList::new))</div><div class="line">ArrayList&lt;Integer&gt; arrayList = stream.collect(ArrayList::new, ArrayList::add, ArrayList::addAll);</div><div class="line">//收集到Set和List中(不考虑Collection的具体实现)</div><div class="line">Set&lt;Integer&gt; set = stream.collect(Collectors.toSet());</div><div class="line">List&lt;Integer&gt; list = stream.collect(Collectors.toList());</div><div class="line">//收集成一个String，元素之间以英文逗号分割</div><div class="line">String string = stream.map(String::valueOf).collect(Collectors.joining(&quot;,&quot;));</div><div class="line">//收集成一个特殊的函数，一次性取得count/min/max/avg/sum</div><div class="line">IntSummaryStatistics statistics = stream.collect(Collectors.summarizingInt(Integer::intValue));</div><div class="line">//将表示JVM属性的流收集成一个Map&lt;Object, Object&gt;</div><div class="line">Stream&lt;Map.Entry&lt;Object, Object&gt;&gt; propertyStream = System.getProperties().entrySet().stream();</div><div class="line">Map&lt;Object, Object&gt; propertyMap = propertyStream.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (existKey, newKey) -&gt; newKey));</div></pre></td></tr></table></figure></p>
+<p>对于收集成Map的情况，toMap()方法需要3个参数，第1个是Map的Key，第2个是Map的Value，这两个比较基础，但第3个是一个函数，用于处置Key重复的情形，例子中直接舍弃了旧的留下新的，如果需要两者均保留，那么一是收集结果将变成类似Map<object, set<object="">&gt;，二是上面第3个参数的逻辑将变成重新实例化一个Set将新旧Set中的值全部添加进去。</object,></p>
+<h6 id="分组和分片"><a href="#分组和分片" class="headerlink" title="分组和分片"></a>分组和分片</h6><p>上一节中我们收集Map的行为，实际上就是这里的分组，我们大可比不那般简单粗暴，完全可以使用groupingBy()方法代替<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Stream&lt;Map.Entry&lt;Object, Object&gt;&gt; propertyStream = System.getProperties().entrySet().stream();</div><div class="line">//按Key分组</div><div class="line">Map&lt;Object, List&lt;Map.Entry&gt;&gt; propertyMap = propertyStream.collect(Collectors.groupingBy(Map.Entry::getKey));</div><div class="line">//按Value是否为空分组</div><div class="line">Map&lt;Boolean, List&lt;Map.Entry&gt;&gt; propertyIsBlankMap = propertyStream.collect(Collectors.groupingBy(entry -&gt; entry.getValue().toString().equals(&quot;&quot;)));</div></pre></td></tr></table></figure></p>
+<p>groupingBy()方法的参数是分类的依据，一般地，指定Key，如果指定了一个返回布尔值的函数，那么整个流将按照这个布尔值的真假分成2类。</p>
+<p>而分类后的Map的Value部分，一般地，为原始流中的某个元素，如果我们要对它进行加工处理，需要指定一个叫做downstream的东西，也即groupingBy()方法的第2个参数，但实际上，在使用之前应当考虑是都真的有必要使用非常非常复杂的聚合表达式，这里只举最简单的例子（可能不是十分恰当）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">//按每个属性名对应的属性值个数分组(本例中都是1:1)</div><div class="line">Map&lt;Object, Long&gt; propertyCountMap = propertyStream.collect(Collectors.groupingBy(Map.Entry::getKey,Collectors.counting()));</div><div class="line">//按每个属性名对应的属性值的长度的数学特征分组</div><div class="line">Map propertyLengthMap = propertyStream.collect(Collectors.groupingBy(Map.Entry::getKey,Collectors.summarizingInt(entry -&gt; entry.getValue().toString().length())));</div></pre></td></tr></table></figure></p>
+<h4 id="原始类型流"><a href="#原始类型流" class="headerlink" title="原始类型流"></a>原始类型流</h4><p>之前我们需要包含原始数据类型的流时，用的都是他们的包装类型，诸如Stream<integer>，Stream<double>等，尽管有对基本数据类型的自动装箱拆箱机制，但多少对性能有一定影响。Java8同期提供了3种基本数据类型——int、long、double对应的Stream，分别是IntStream、LongStream、DoubleStream，但不提供byte、short、char、boolean、float类型的原始类型流。</double></integer></p>
+<p>原始类型流的创建，以及其方法的调用和对象流有几分相似，另外还支持很对象流的相互转换。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">//直接创建int、long、double三种原始类型流</div><div class="line">IntStream stream1 = Arrays.stream(new int[]&#123;1, 2, 3, 4, 5, 5, 6, 7, 8, 9&#125;);</div><div class="line">LongStream stream2 = LongStream.rangeClosed(1, 100);</div><div class="line">DoubleStream stream3 = new Random().doubles();</div><div class="line">//从对象流转换</div><div class="line">Stream&lt;String&gt; stream4 = Stream.of(&quot;0&quot;, &quot;12&quot;, &quot;345&quot;, &quot;6789&quot;);</div><div class="line">IntStream stream5 = stream4.mapToInt(String::length);</div><div class="line">//包装回对象流</div><div class="line">Stream&lt;Integer&gt; stream6 = stream1.boxed();</div></pre></td></tr></table></figure></p>
+<h4 id="并行流"><a href="#并行流" class="headerlink" title="并行流"></a>并行流</h4><p>其实早在前面就提到过了并行操作，缺省的，当使用stream()方法获得一个流时，它是串行的，要得到并行流，应当使用parallelStream()方法，或者在串行流上调用parallel()方法。既然是并行，就不得不考虑并发错误，这里需要注意的点和从前是一样的。另外在并行条件下不得不提的是有序问题，一般地，并发执行意味着结果的不确定性，但Stream对此提供了一定的保证，如果我们没有保持有序的需求，可以调用unordered()让后续的操作更高效地并行。</p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2017/02/16/java8-the-new-date-and-time-api/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">Java8学习之新的日期和时间API</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2017/02/04/android-mipmap-resolution/">
+        <span class="next-text nav-default">（备忘）Android应用中图片类资源分辨率参考</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2017/02/09/java8-the-stream-api/';
+        
+            this.page.identifier = 'a2c7b1b0-eebb-11e6-ac71-bda4d37471fb';
+        
+        this.page.title = 'Java8学习之Stream API';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>

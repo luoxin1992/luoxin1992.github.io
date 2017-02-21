@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.lx1992.com.cn/"/>
-  <updated>2017-01-29T16:43:52.479Z</updated>
+  <updated>2017-02-20T09:26:12.343Z</updated>
   <id>http://www.lx1992.com.cn/</id>
   
   <author>
@@ -14,6 +14,198 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Java8学习之新的日期和时间API</title>
+    <link href="http://www.lx1992.com.cn/2017/02/16/java8-the-new-date-and-time-api/"/>
+    <id>http://www.lx1992.com.cn/2017/02/16/java8-the-new-date-and-time-api/</id>
+    <published>2017-02-16T10:50:52.000Z</published>
+    <updated>2017-02-20T09:26:12.343Z</updated>
+    
+    <content type="html"><![CDATA[<p>过去，在Java中处理日期和时间时，无外乎这两个类(以及它们的子类)</p>
+<ul>
+<li>java.util.Date</li>
+<li>java.util.Calendar</li>
+</ul>
+<p>但它们固有一些缺陷，到了Java8，我们有了更多更好的选择，包括又不限于</p>
+<ul>
+<li>java.time.Instant</li>
+<li>java.time.Duration</li>
+<li>java.time.format.DateTimeFormatter</li>
+</ul>
+<a id="more"></a>
+<h4 id="绝对时间"><a href="#绝对时间" class="headerlink" title="绝对时间"></a>绝对时间</h4><p>如果我们把时间看做一道长河（时间轴），那么其上的每一个<em>点</em>，就是一个<em>瞬间</em>(Instant)，用java.time.Instant类的对象表示。Instant类可以表示的时间范围非常之广，从-1000000000-01-01 00:00:00到+1000000000-12-31 23:59:59.999999999，和先前的java.util.Date类似，仍然取1970-01-01 00:00:00作为时间的纪元，这3个特殊的时间点，可以通过Instant.MIN，Instant.MAX和Instant.EPOCH加以验证。若要取得当前的瞬时值，可以使用<em>now</em>方法。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//获得Instant可以表示的最小、最大时间点</span></div><div class="line">Instant min = Instant.MIN;</div><div class="line">Instant max = Instant.MAX;</div><div class="line">System.out.println(min);</div><div class="line">System.out.println(max);</div><div class="line"><span class="comment">//获取Instant时间纪元和当前时间点</span></div><div class="line">Instant epoch = Instant.EPOCH;</div><div class="line">Instant now = Instant.now();</div><div class="line">System.out.println(epoch);</div><div class="line">System.out.println(now);</div></pre></td></tr></table></figure></p>
+<p>两个Instant之间的距离，被称为<em>持续时间</em>(Duration)，要计算Duration，使用<em>between</em>方法，然后再通过<em>toNanos|Seconds|Days</em>等方法得到这段时间对应的，从纳秒到天，不同精度的表示。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//计算两个Instant之间的Duration</span></div><div class="line">Duration duration = Duration.between(epoch, now);</div><div class="line">System.out.println(duration);</div><div class="line">System.out.println(duration.toMillis());</div><div class="line">System.out.println(duration.toDays());</div></pre></td></tr></table></figure></p>
+<p>无论是Instant对象还是Duration对象，它们都是不可变的，底层分实际上由一个long型和一个int型整数组成，前者表示这个时间点距离时间纪元的<em>秒</em>数，后者表示一个最多可以精确到纳秒的调整值，注意这里已经不再是距离时间纪元的<em>毫秒</em>数了。</p>
+<p>此外，二者均提供了诸多数学操作，即包括了做四则运算的<em>plus|minus[Nanos|Seconds|Days]</em>、<em>multiplied|dividedBy</em>，也有类似<em>abs</em>、<em>isZero|Negative</em>这样的方法。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//对Instant和Duration进行数学操作</span></div><div class="line">Instant nowPlusDays = now.plus(<span class="number">1</span>, ChronoUnit.DAYS);</div><div class="line">System.out.println(nowPlusDays);</div><div class="line">Instant nowMinusSeconds = now.minusSeconds(<span class="number">86400</span>);</div><div class="line">System.out.println(nowMinusSeconds);</div><div class="line">Duration durationMultiplyFactor = duration.multipliedBy(<span class="number">3</span>);</div><div class="line">System.out.println(durationMultiplyFactor.toMillis());</div><div class="line">Duration durationDivideFactor = duration.dividedBy(<span class="number">2</span>);</div><div class="line">System.out.println(durationDivideFactor.toMillis());</div><div class="line">System.out.println(duration.isNegative());</div></pre></td></tr></table></figure></p>
+<h4 id="本地日期-时间"><a href="#本地日期-时间" class="headerlink" title="本地日期/时间"></a>本地日期/时间</h4><p>Java8提供了LocalDate、LocalTime、LocalDateTime这么3个类来表示本地日期/时间。用这3个类所表示的时间，是无法对应在Instant上的，主要原因是它缺少了时区等信息，也就无法准确地与一个瞬时点对应起来。</p>
+<p>可以使用<em>now</em>、<em>of</em>方法构造LocalDate、LocalTime、LocalDateTime对象，先前Date类的几个奇怪设计：月份取值0-11、年份是目标年份与1900之差等都不复存在了，而且类似于Instant和Duration，提供了<em>plus|minus[Days|Weeks|Months|Years]</em>等方法可用于数学计算。此外，两个LocalDateTime只差不再是Duration，而是<em>时段</em>(Period)。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//构造本地日期/时间</span></div><div class="line">LocalDate nowDate = LocalDate.now();</div><div class="line">LocalTime nowTime = LocalTime.now();</div><div class="line">LocalDateTime ofDateTime = LocalDateTime.of(<span class="number">2017</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">8</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</div><div class="line">System.out.println(nowDate);</div><div class="line">System.out.println(nowTime);</div><div class="line">System.out.println(ofDateTime);</div><div class="line"><span class="comment">//数学计算</span></div><div class="line">LocalDate nowDateMinusYears = nowDate.minusYears(<span class="number">1</span>);</div><div class="line">System.out.println(nowDateMinusYears);</div><div class="line">System.out.println(nowDateMinusYears.isLeapYear());</div><div class="line"><span class="comment">//计算两个LocalDateTime之间的Period</span></div><div class="line">LocalDate springFestival = LocalDate.of(<span class="number">2017</span>, <span class="number">1</span>, <span class="number">1</span>);</div><div class="line">LocalDate nationalDay = LocalDate.of(<span class="number">2017</span>, <span class="number">10</span>, <span class="number">1</span>);</div><div class="line">Period period = springFestival.until(nationalDay);</div><div class="line">System.out.println(period);</div><div class="line"><span class="keyword">long</span> periodInDays = springFestival.until(nationalDay, ChronoUnit.DAYS);</div><div class="line">System.out.println(periodInDays);</div></pre></td></tr></table></figure></p>
+<p>如果要获取/设置已经用LocalDate、LocalTime、LocalDateTime表示的某个时间中某个字段(如：年、月、日、时、分、秒)的值，对应的也有<em>get|withYear|Minute</em>等方法(略好奇为什么设置不是set而是with……)。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//字段值操作</span></div><div class="line">Month month = nowDate.getMonth();</div><div class="line">DayOfWeek dayOfWeek = nowDate.getDayOfWeek();</div><div class="line">System.out.println(month);</div><div class="line">System.out.println(dayOfWeek);</div><div class="line">LocalTime withTime = nowTime.withHour(<span class="number">0</span>).withMinute(<span class="number">0</span>).withSecond(<span class="number">0</span>).withNano(<span class="number">0</span>);</div><div class="line">System.out.println(withTime);</div></pre></td></tr></table></figure></p>
+<p>对LocalDate而言，<em>with</em>方法还有一种特殊的用法，就是通过<em>日期校正器</em>(TemporalAdjusters)，直接计算出<em>first|lastDayOf(Next)Month|Year</em>(今年/本月/次月/明年的第一天/最后一天)、<em>first/last/dayOfweekInMonth</em>(本月中的第一个/最后一个/第X个星期X)、<em>next|previous(OrSame)</em>(下一个/上一个(或同一个)星期X)。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//使用TemporalAdjusters</span></div><div class="line">LocalDate aDate = LocalDate.of(<span class="number">2017</span>, <span class="number">2</span>, <span class="number">1</span>);</div><div class="line">LocalDate firstDayOfNextMonth = aDate.with(TemporalAdjusters.firstDayOfNextMonth());</div><div class="line">LocalDate lastDayOfYear = aDate.with(TemporalAdjusters.lastDayOfYear());</div><div class="line">LocalDate firstFridayInMonth = aDate.with(TemporalAdjusters.firstInMonth(DayOfWeek.FRIDAY));</div><div class="line">LocalDate nextOrSameWednesday = aDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY));</div><div class="line">LocalDate previousWednesday = aDate.with(TemporalAdjusters.previous(DayOfWeek.WEDNESDAY));</div><div class="line">System.out.println(firstDayOfNextMonth);</div><div class="line">System.out.println(lastDayOfYear);</div><div class="line">System.out.println(firstFridayInMonth);</div><div class="line">System.out.println(nextOrSameWednesday);</div><div class="line">System.out.println(previousWednesday);</div></pre></td></tr></table></figure></p>
+<h4 id="带时区的日期时间"><a href="#带时区的日期时间" class="headerlink" title="带时区的日期时间"></a>带时区的日期时间</h4><p>虽说时区完全就是一个人为的概念，但带有时区的时间反而更符合实际情况，Java8用ZonedDateTime来表示这种时间。</p>
+<p>首先，它可以和LocalDateTime一样直接构造出来，无非是多了一个表示时区ZoneId作为参数。其次，它也可以从LocalDateTime转化而来，或者转化为LocalDateTime，用的是<em>LocalDateTime#atZone</em>和<em>ZonedDateTime#toLocalDateTime</em>方法。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">LocalDateTime localDateTime = LocalDateTime.of(<span class="number">2017</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</div><div class="line">ZonedDateTime fromLocalDateTime = localDateTime.atZone(ZoneId.of(<span class="string">"UTC"</span>));</div><div class="line">System.out.println(fromLocalDateTime);</div><div class="line">ZonedDateTime ofZonedDateTime = ZonedDateTime.of(<span class="number">2017</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, ZoneId.of(<span class="string">"UTC"</span>));</div><div class="line">System.out.println(ofZonedDateTime);</div><div class="line">LocalDateTime toLocalDateTime = ofZonedDateTime.toLocalDateTime();</div><div class="line">System.out.println(toLocalDateTime);</div></pre></td></tr></table></figure></p>
+<p>ZonedDateTime和上面其他所有类一样，也提供了非常多用于数学计算的方法，当然由于涉及时区、夏令时等的计算，应当在实现上会更复杂，不过在中国很少开发涉及这些的程序，我也就没有过多去关注了。</p>
+<h4 id="格式化和解析"><a href="#格式化和解析" class="headerlink" title="格式化和解析"></a>格式化和解析</h4><p>个人觉得格式化和解析这一段同以前的java.text.DateFormat和java.text.SimpleDateFormat类似乎没有太大的变化，同样可以把一个日期/时间做/从3种不同形式的格式化/解析，分别是标准格式、本地化格式和自定义格式<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">LocalDateTime now = LocalDateTime.now();</div><div class="line"><span class="comment">//标准格式</span></div><div class="line">String isoLocalDateTime = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(now);</div><div class="line">System.out.println(isoLocalDateTime);</div><div class="line"><span class="comment">//本地化格式</span></div><div class="line">String fullLocalizedDateTime = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(now);</div><div class="line">System.out.println(fullLocalizedDateTime);</div><div class="line"><span class="comment">//自定义格式</span></div><div class="line">String patternDateTime = DateTimeFormatter.ofPattern(<span class="string">"yyyy-MM-dd HH:mm:ss.SSS"</span>).format(now);</div><div class="line">System.out.println(patternDateTime);</div><div class="line"><span class="comment">//解析</span></div><div class="line">ZonedDateTime zonedDateTime = ZonedDateTime.parse(<span class="string">"2017-01-01T00:00:00.000+08:00[Asia/Shanghai]"</span>,DateTimeFormatter.ISO_ZONED_DATE_TIME);</div><div class="line">System.out.println(zonedDateTime);</div></pre></td></tr></table></figure></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;过去，在Java中处理日期和时间时，无外乎这两个类(以及它们的子类)&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;java.util.Date&lt;/li&gt;
+&lt;li&gt;java.util.Calendar&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;但它们固有一些缺陷，到了Java8，我们有了更多更好的选择，包括又不限于&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;java.time.Instant&lt;/li&gt;
+&lt;li&gt;java.time.Duration&lt;/li&gt;
+&lt;li&gt;java.time.format.DateTimeFormatter&lt;/li&gt;
+&lt;/ul&gt;
+    
+    </summary>
+    
+      <category term="Java8" scheme="http://www.lx1992.com.cn/categories/java8/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Java8学习之Stream API</title>
+    <link href="http://www.lx1992.com.cn/2017/02/09/java8-the-stream-api/"/>
+    <id>http://www.lx1992.com.cn/2017/02/09/java8-the-stream-api/</id>
+    <published>2017-02-09T11:33:53.000Z</published>
+    <updated>2017-02-16T09:14:22.399Z</updated>
+    
+    <content type="html"><![CDATA[<p>Java8在集合框架中添加了Stream API。Stream API的作用也是处理集合中的元素，但和传统的迭代器相比，应该说在性能上更具优势。Stream的使用分成3个步骤。</p>
+<ol>
+<li>创建一个Stream</li>
+<li>描述要做什么，即指定一个或多个将一个Stream转化为另一个Stream的<em>中间操作</em></li>
+<li>要求产生结果，即使用<em>终止操作</em><a id="more"></a>
+</li>
+</ol>
+<h4 id="创建Stream"><a href="#创建Stream" class="headerlink" title="创建Stream"></a>创建Stream</h4><p>Java8中，不单是所有集合的实现均提供了stream()方法，常用的还包括：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">//使用Collection接口的stream方法</div><div class="line">List&lt;String&gt; list = new ArrayList&lt;&gt;();</div><div class="line">list.add(&quot;Hello World&quot;);</div><div class="line">Stream&lt;String&gt; stream1 = list.stream();</div><div class="line"></div><div class="line">//使用Stream.of静态创建流</div><div class="line">Stream&lt;String&gt; stream2 = Stream.of(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;8&quot;, &quot;9&quot;);</div><div class="line"></div><div class="line">//从数组转换Stream</div><div class="line">String[] array = new String[]&#123;&quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;8&quot;, &quot;9&quot;&#125;;</div><div class="line">Stream&lt;String&gt; stream3 = Arrays.stream(array);</div><div class="line"></div><div class="line">//创建空的Stream</div><div class="line">Stream&lt;String&gt; stream4 = Stream.empty();</div><div class="line"></div><div class="line">//创建无限长度的Stream(含有无限多个随机数)</div><div class="line">Stream&lt;Double&gt; stream5 = Stream.generate(Math::random);</div><div class="line"></div><div class="line">//创建无限长度的Stream(含有无穷递增数列)</div><div class="line">Stream&lt;Integer&gt; stream6 = Stream.iterate(0, (val) -&gt; val + 1);</div></pre></td></tr></table></figure></p>
+<p>也就是说，除了从集合转换，我们还可以静态创建，甚至直接生成可能长度都是无限的Stream。但是，Stream本身并不存储其中的元素，这也就是为什么可以有长度无限的Stream，真正的存储依赖其底层集合，或者动态产生。</p>
+<h4 id="Stream的中间操作"><a href="#Stream的中间操作" class="headerlink" title="Stream的中间操作"></a>Stream的中间操作</h4><p>常用的Stream中间操作包括<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">//过滤出包含某个特定条件的所有元素</div><div class="line">Stream&lt;String&gt; filter = stream.filter(word -&gt; word.length() &gt; 5);</div><div class="line">//对流中值进行某种形式的转化</div><div class="line">Stream&lt;Integer&gt; map = stream.map(String::length);</div><div class="line">//提取子流：裁剪到指定长度</div><div class="line">Stream&lt;String&gt; limit = stream.limit(5);</div><div class="line">//提取子流：跳过前面若干元素</div><div class="line">Stream&lt;String&gt; skip = stream.skip(5);</div><div class="line">//连接两个流</div><div class="line">Stream&lt;String&gt; concat = Stream.concat(Stream.of(&quot;Hello&quot;), Stream.of(&quot;World&quot;));</div><div class="line">//对流中的元素调用某个方法，然后返回同样的流</div><div class="line">Stream&lt;String&gt; peek = stream.peek(System.out::println);</div><div class="line">//对流中元素去重</div><div class="line">Stream&lt;String&gt; distinct = stream.distinct();</div><div class="line">//对流中元素排序</div><div class="line">Stream&lt;String&gt; sorted = stream.sorted(Comparator.reverseOrder());</div></pre></td></tr></table></figure></p>
+<p>其中最为关键的2种操作当属<em>filter</em>和<em>map</em>方法。前者传入一个从T到boolean的方法，它会产生一个只包含符合特定条件之元素的新流；后者传入一个从T到R的方法，会在流中的每个元素上执行传入的代码以完成转化；与map方法类似的还有一个<em>flatMap</em>方法，它的背后另有一套复杂理论，不是Stream的专属，但在流中，它的作用是将一个包含多个流的流展开为一个流，即从Stream<stream<t>&gt;到Stream<t>。</t></stream<t></p>
+<p>这里对应Stream的第2个特点：Stream操作不会改变原Stream，而是返回一个持有操作结果的新Stream。</p>
+<h4 id="Optional操作"><a href="#Optional操作" class="headerlink" title="Optional操作"></a>Optional操作</h4><p>在Stream终止操作之前呢，插一段关于Optional的。</p>
+<p>所谓Optional，和它的字面意思一样，是对一个值的封装，既然是“可选的”，那么封装的这个值就有可能不存在，但是Optional不会返回null，因此<em>相对来说</em>更安全。为什么是相对来说呢？因为如果只是用get()和ifPresent()两个方法来取出Optional封装的值，以及判断Optional是否封装了值，未免太生硬了，而且还是避免不了NPE。</p>
+<p>首先如何创建Optional呢？使用of()和empty()方法，但这段逻辑Java8已经帮我们封装出了一个ofNullable()方法。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">private static Optional&lt;String&gt; getStringOptional(String str) &#123;</div><div class="line">    //如果str为null，返回空的Optional，否则返回封装了str的Optional</div><div class="line">    //完全等价于 return Optional.ofNullable(str);</div><div class="line">    return str == null ? Optional.empty() : Optional.of(str);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>其次如何使用Optional呢？使用ifPresent()和orElse(T)/orElseGet|Throw()方法。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">//如果Optional中有值，就执行System.out::println</div><div class="line">getStringOptional(null).ifPresent(System.out::println);</div><div class="line">getStringOptional(&quot;ABC&quot;).ifPresent(System.out::println);</div><div class="line">//如果Optional中没有值，就代换成空串/执行某个方法获取值/抛出异常</div><div class="line">getStringOptional(null).orElse(&quot;&quot;);</div><div class="line">getStringOptional(null).orElseGet(() -&gt; String.valueOf(System.currentTimeMillis()));</div><div class="line">getStringOptional(null).orElseThrow(NoSuchElementException::new);</div></pre></td></tr></table></figure></p>
+<p>另外Optional也提供了map()和flatMap()方法，用途和Stream中是一样的，我们可以把Optional想象成一个长度非0即1的Stream，这样理解起来就会容易有一些。</p>
+<h4 id="Stream的终止操作"><a href="#Stream的终止操作" class="headerlink" title="Stream的终止操作"></a>Stream的终止操作</h4><p>Stream的终止操作相对前面两者要复杂许多，将分成几个部分。这里提前给出流的第3个特点：操作可能会被延迟执行，意思是说前边的中间操作，看上去像是调用了一个或多个方法，但它们并不是立即就被执行的，而是要等到终止操作到来时才会被执行。</p>
+<h6 id="聚合"><a href="#聚合" class="headerlink" title="聚合"></a>聚合</h6><p>所谓聚合操作，就是以某种形式，将流中的元素组合为一个，使用reduce()方法。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">Stream&lt;Integer&gt; stream1 = Stream.iterate(1, val -&gt; val + 1).limit(10);</div><div class="line">//聚合流的第一种形式，等价于sum=1, sum+=2, sum+=3...</div><div class="line">Optional&lt;Integer&gt; sum1 = stream1.reduce(Integer::sum);</div><div class="line">//聚合流的第二种形式，等价于sum=0, sum+=1, sum+=2...</div><div class="line">Integer sum2 = stream1.reduce(0, Integer::sum);</div><div class="line"></div><div class="line">Stream&lt;String&gt; stream2 = Stream.of(&quot;0&quot;, &quot;12&quot;, &quot;345&quot;, &quot;6789&quot;);</div><div class="line">//聚合流的第三种形式</div><div class="line">Integer sum3 = stream2.reduce(0, (sum, word) -&gt; sum += word.length(), Integer::sum);</div></pre></td></tr></table></figure></p>
+<p>聚合最简单的实现就是从流的前两个元素开始，或者从一个给定的值和流的第一个元素开始，不断将聚合函数应用到流中的其他元素上。第三种形式相对特殊一些，本例是求String流中各个字符串的总长度，但sum+=word.length()不满足BinaryOperator的定义（一个满足(T, T) -&gt; T的函数）。</p>
+<p>Java8另外提供了几个简便，但是常用的reduce操作。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">//返回流中元素个数</div><div class="line">Long count = stream1.count();</div><div class="line">//返回流中元素最小值</div><div class="line">Optional&lt;Integer&gt; min = stream1.min(Integer::compareTo);</div><div class="line">//返回流中元素最大值</div><div class="line">Optional&lt;Integer&gt; max = stream1.max(Integer::compareTo);</div><div class="line">//返回流中满足指定条件的第一个元素</div><div class="line">Optional&lt;Integer&gt; findFirst = stream1.filter(val -&gt; val &gt; 5).findFirst();</div><div class="line">//返回流中满足指定条件的任意一个元素(并行计算)</div><div class="line">Optional&lt;Integer&gt; findAny = stream1.parallel().filter(val -&gt; val &gt; 5).findAny();</div><div class="line">//返回返回流中是否有元素满足指定条件(并行计算)</div><div class="line">Boolean anyMatch = stream1.parallel().anyMatch(val -&gt; val &gt; 5);</div><div class="line">//返回返回流中是否全部元素满足指定条件</div><div class="line">Boolean allMatch = stream1.allMatch(val -&gt; val &gt; 5);</div><div class="line">//返回返回流中是否没有元素满足指定条件</div><div class="line">Boolean noneMatch = stream1.noneMatch(val -&gt; val &gt; 100);</div></pre></td></tr></table></figure></p>
+<h6 id="收集"><a href="#收集" class="headerlink" title="收集"></a>收集</h6><p>收集结果一般用在对流进行一番处理之后再来访问流中的元素。除了传统的iterator()方法可以返回这个流的迭代器，以及前文中使用过的toArray()方法将这个流转换成一个数组，Stream提供了collect()方法用于将元素收集起来<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">Stream&lt;Integer&gt; stream = Stream.iterate(1, val -&gt; val + 1).limit(10);</div><div class="line">//收集到ArrayList中</div><div class="line">//完全等价于 stream.collect(Collectors.toCollection(ArrayList::new))</div><div class="line">ArrayList&lt;Integer&gt; arrayList = stream.collect(ArrayList::new, ArrayList::add, ArrayList::addAll);</div><div class="line">//收集到Set和List中(不考虑Collection的具体实现)</div><div class="line">Set&lt;Integer&gt; set = stream.collect(Collectors.toSet());</div><div class="line">List&lt;Integer&gt; list = stream.collect(Collectors.toList());</div><div class="line">//收集成一个String，元素之间以英文逗号分割</div><div class="line">String string = stream.map(String::valueOf).collect(Collectors.joining(&quot;,&quot;));</div><div class="line">//收集成一个特殊的函数，一次性取得count/min/max/avg/sum</div><div class="line">IntSummaryStatistics statistics = stream.collect(Collectors.summarizingInt(Integer::intValue));</div><div class="line">//将表示JVM属性的流收集成一个Map&lt;Object, Object&gt;</div><div class="line">Stream&lt;Map.Entry&lt;Object, Object&gt;&gt; propertyStream = System.getProperties().entrySet().stream();</div><div class="line">Map&lt;Object, Object&gt; propertyMap = propertyStream.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (existKey, newKey) -&gt; newKey));</div></pre></td></tr></table></figure></p>
+<p>对于收集成Map的情况，toMap()方法需要3个参数，第1个是Map的Key，第2个是Map的Value，这两个比较基础，但第3个是一个函数，用于处置Key重复的情形，例子中直接舍弃了旧的留下新的，如果需要两者均保留，那么一是收集结果将变成类似Map<object, set<object="">&gt;，二是上面第3个参数的逻辑将变成重新实例化一个Set将新旧Set中的值全部添加进去。</object,></p>
+<h6 id="分组和分片"><a href="#分组和分片" class="headerlink" title="分组和分片"></a>分组和分片</h6><p>上一节中我们收集Map的行为，实际上就是这里的分组，我们大可比不那般简单粗暴，完全可以使用groupingBy()方法代替<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Stream&lt;Map.Entry&lt;Object, Object&gt;&gt; propertyStream = System.getProperties().entrySet().stream();</div><div class="line">//按Key分组</div><div class="line">Map&lt;Object, List&lt;Map.Entry&gt;&gt; propertyMap = propertyStream.collect(Collectors.groupingBy(Map.Entry::getKey));</div><div class="line">//按Value是否为空分组</div><div class="line">Map&lt;Boolean, List&lt;Map.Entry&gt;&gt; propertyIsBlankMap = propertyStream.collect(Collectors.groupingBy(entry -&gt; entry.getValue().toString().equals(&quot;&quot;)));</div></pre></td></tr></table></figure></p>
+<p>groupingBy()方法的参数是分类的依据，一般地，指定Key，如果指定了一个返回布尔值的函数，那么整个流将按照这个布尔值的真假分成2类。</p>
+<p>而分类后的Map的Value部分，一般地，为原始流中的某个元素，如果我们要对它进行加工处理，需要指定一个叫做downstream的东西，也即groupingBy()方法的第2个参数，但实际上，在使用之前应当考虑是都真的有必要使用非常非常复杂的聚合表达式，这里只举最简单的例子（可能不是十分恰当）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">//按每个属性名对应的属性值个数分组(本例中都是1:1)</div><div class="line">Map&lt;Object, Long&gt; propertyCountMap = propertyStream.collect(Collectors.groupingBy(Map.Entry::getKey,Collectors.counting()));</div><div class="line">//按每个属性名对应的属性值的长度的数学特征分组</div><div class="line">Map propertyLengthMap = propertyStream.collect(Collectors.groupingBy(Map.Entry::getKey,Collectors.summarizingInt(entry -&gt; entry.getValue().toString().length())));</div></pre></td></tr></table></figure></p>
+<h4 id="原始类型流"><a href="#原始类型流" class="headerlink" title="原始类型流"></a>原始类型流</h4><p>之前我们需要包含原始数据类型的流时，用的都是他们的包装类型，诸如Stream<integer>，Stream<double>等，尽管有对基本数据类型的自动装箱拆箱机制，但多少对性能有一定影响。Java8同期提供了3种基本数据类型——int、long、double对应的Stream，分别是IntStream、LongStream、DoubleStream，但不提供byte、short、char、boolean、float类型的原始类型流。</double></integer></p>
+<p>原始类型流的创建，以及其方法的调用和对象流有几分相似，另外还支持很对象流的相互转换。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">//直接创建int、long、double三种原始类型流</div><div class="line">IntStream stream1 = Arrays.stream(new int[]&#123;1, 2, 3, 4, 5, 5, 6, 7, 8, 9&#125;);</div><div class="line">LongStream stream2 = LongStream.rangeClosed(1, 100);</div><div class="line">DoubleStream stream3 = new Random().doubles();</div><div class="line">//从对象流转换</div><div class="line">Stream&lt;String&gt; stream4 = Stream.of(&quot;0&quot;, &quot;12&quot;, &quot;345&quot;, &quot;6789&quot;);</div><div class="line">IntStream stream5 = stream4.mapToInt(String::length);</div><div class="line">//包装回对象流</div><div class="line">Stream&lt;Integer&gt; stream6 = stream1.boxed();</div></pre></td></tr></table></figure></p>
+<h4 id="并行流"><a href="#并行流" class="headerlink" title="并行流"></a>并行流</h4><p>其实早在前面就提到过了并行操作，缺省的，当使用stream()方法获得一个流时，它是串行的，要得到并行流，应当使用parallelStream()方法，或者在串行流上调用parallel()方法。既然是并行，就不得不考虑并发错误，这里需要注意的点和从前是一样的。另外在并行条件下不得不提的是有序问题，一般地，并发执行意味着结果的不确定性，但Stream对此提供了一定的保证，如果我们没有保持有序的需求，可以调用unordered()让后续的操作更高效地并行。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Java8在集合框架中添加了Stream API。Stream API的作用也是处理集合中的元素，但和传统的迭代器相比，应该说在性能上更具优势。Stream的使用分成3个步骤。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;创建一个Stream&lt;/li&gt;
+&lt;li&gt;描述要做什么，即指定一个或多个将一个Stream转化为另一个Stream的&lt;em&gt;中间操作&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;要求产生结果，即使用&lt;em&gt;终止操作&lt;/em&gt;
+    
+    </summary>
+    
+      <category term="Java8" scheme="http://www.lx1992.com.cn/categories/java8/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>（备忘）Android应用中图片类资源分辨率参考</title>
+    <link href="http://www.lx1992.com.cn/2017/02/04/android-mipmap-resolution/"/>
+    <id>http://www.lx1992.com.cn/2017/02/04/android-mipmap-resolution/</id>
+    <published>2017-02-04T15:21:51.000Z</published>
+    <updated>2017-02-04T15:33:38.186Z</updated>
+    
+    <content type="html"><![CDATA[<p>偶尔也会做点Android的应用，每每用到图片素材，在寻找和加工过程中，多少会疑惑什么分辨率合适。这次刚好参考了一些别人的做法，加上自己找了几种不同分辨率的手机测试了下效果说得过去，记下来做个备忘。</p>
+<p>首先现在用AS建好工程以后图片类素材分了5种DPI：mdpi、hdpi、xhdpi、xxhdpi、xxxhdpi，每种DPI下都预置了Android的小机器人作为应用的启动器图标，它的分辨率就可以做为一个参考</p>
+<table>
+<thead>
+<tr>
+<th>DPI</th>
+<th>分辨率</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mdpi</td>
+<td>48</td>
+</tr>
+<tr>
+<td>hdpi</td>
+<td>72</td>
+</tr>
+<tr>
+<td>xhdpi</td>
+<td>96</td>
+</tr>
+<tr>
+<td>xxhdpi</td>
+<td>144</td>
+</tr>
+<tr>
+<td>xxxhdpi</td>
+<td>192</td>
+</tr>
+</tbody>
+</table>
+<p>有些情况下可能还是觉得这个分辨率大了，所以另外找了Google官方的<a href="https://design.google.com/icons/" target="_blank" rel="external">Material Design Icons</a>，它里面提供的大多是这个分辨率</p>
+<table>
+<thead>
+<tr>
+<th>DPI</th>
+<th>分辨率</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mdpi</td>
+<td>24</td>
+</tr>
+<tr>
+<td>hdpi</td>
+<td>36</td>
+</tr>
+<tr>
+<td>xhdpi</td>
+<td>48</td>
+</tr>
+<tr>
+<td>xxhdpi</td>
+<td>72</td>
+</tr>
+<tr>
+<td>xxxhdpi</td>
+<td>96</td>
+</tr>
+</tbody>
+</table>
+<p>做Icon非常适合。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;偶尔也会做点Android的应用，每每用到图片素材，在寻找和加工过程中，多少会疑惑什么分辨率合适。这次刚好参考了一些别人的做法，加上自己找了几种不同分辨率的手机测试了下效果说得过去，记下来做个备忘。&lt;/p&gt;
+&lt;p&gt;首先现在用AS建好工程以后图片类素材分了5种DPI：mdpi
+    
+    </summary>
+    
+      <category term="Android" scheme="http://www.lx1992.com.cn/categories/android/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>Java8学习之默认方法</title>
@@ -48,8 +240,8 @@
   
   <entry>
     <title>Java8学习之Lambda表达式</title>
-    <link href="http://www.lx1992.com.cn/2017/01/29/java8-lambda-expression/"/>
-    <id>http://www.lx1992.com.cn/2017/01/29/java8-lambda-expression/</id>
+    <link href="http://www.lx1992.com.cn/2017/01/29/java8-lambda-expressions/"/>
+    <id>http://www.lx1992.com.cn/2017/01/29/java8-lambda-expressions/</id>
     <published>2017-01-29T11:23:04.000Z</published>
     <updated>2017-01-29T16:43:52.463Z</updated>
     
@@ -352,7 +544,7 @@
     
     <content type="html"><![CDATA[<p>项目中许多地方都需要邮件通知功能。以开发工具为例，譬如，Gogs在版本库变化时可以通知团队成员、Redmine在项目（任务）进度变化时也有类似的功能，更进一步地，程序上线后将会配置相应的JVM监控，以便于发生线上故障时（程序抛出非预期的异常等）及时通知开发者处理。</p>
 <a id="more"></a>
-<p>但是，有几个问题需要留意。首先是如何发送邮件？自己搭建一套完整的邮件服务？真的这样做的话，可以以类似<a href="&#x6d;&#97;&#105;&#108;&#116;&#111;&#x3a;&#109;&#x61;&#105;&#108;&#64;&#x6d;&#x79;&#100;&#111;&#x6d;&#97;&#105;&#110;&#x2e;&#x63;&#111;&#x6d;">&#109;&#x61;&#105;&#108;&#64;&#x6d;&#x79;&#100;&#111;&#x6d;&#97;&#105;&#110;&#x2e;&#x63;&#111;&#x6d;</a>的名义发送邮件，看上去是逼格满满，可就算不考虑这个操作的复杂性，在这个垃圾邮件泛滥的时代，十有八九这种自己发送的邮件会面临各种限制。再者，更现实一点，这些程序都运行在内网主机上，如何向外部发送邮件呢？</p>
+<p>但是，有几个问题需要留意。首先是如何发送邮件？自己搭建一套完整的邮件服务？真的这样做的话，可以以类似<a href="&#109;&#x61;&#x69;&#x6c;&#116;&#111;&#58;&#109;&#x61;&#x69;&#108;&#64;&#x6d;&#x79;&#x64;&#111;&#109;&#97;&#x69;&#110;&#46;&#x63;&#x6f;&#109;">&#109;&#x61;&#x69;&#108;&#64;&#x6d;&#x79;&#x64;&#111;&#109;&#97;&#x69;&#110;&#46;&#x63;&#x6f;&#109;</a>的名义发送邮件，看上去是逼格满满，可就算不考虑这个操作的复杂性，在这个垃圾邮件泛滥的时代，十有八九这种自己发送的邮件会面临各种限制。再者，更现实一点，这些程序都运行在内网主机上，如何向外部发送邮件呢？</p>
 <p>其实，使用邮件中继转发（relay）服务就可以完全解决上面这些所谓的“问题”。邮件中继转发，简单地说，就是邮件的最终递送仍旧由外部SMTP服务完成，163、QQ、Gmail什么的都可以，他们不是更专业吗？而我们的邮件服务器只是扮演一个代理的作用而已。</p>
 <p>肩负邮件中继转发这一使命的，也就是本文的主角——Postfix。想要详细学习了解的同学可以戳<a href="https://en.wikipedia.org/wiki/postfix_(software" target="_blank" rel="external">这里</a>)。在本例中，我们的程序将要发送的邮件交给Postfix，然后就没有然后了，完全不知道，也不需要知道邮件最后怎么样了。而收到邮件的Postfix，就像我们在邮件客户端（Foxmail、Thunderbird等）里点击“发送”按钮一般，将邮件交由配置好的外部SMTP服务。</p>
 <p>下面直接介绍开始配置的过程。</p>

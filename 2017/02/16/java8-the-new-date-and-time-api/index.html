@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="Java8学习之新的日期和时间API"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/02/16/java8-the-new-date-and-time-api/"/>
+
+
+<meta name="description" content="过去，在Java中处理日期和时间时，无外乎这两个类(以及它们的子类)
+
+java.util.Date
+java.util.Calendar
+
+但它们固有一些缺陷，到了Java8，我们有了更多更好的选择，包括又不限于
+
+java.time.Instant
+java.time.Duration
+java.time.format.DateTimeFormatter">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java8学习之新的日期和时间API">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/02/16/java8-the-new-date-and-time-api/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="过去，在Java中处理日期和时间时，无外乎这两个类(以及它们的子类)
+
+java.util.Date
+java.util.Calendar
+
+但它们固有一些缺陷，到了Java8，我们有了更多更好的选择，包括又不限于
+
+java.time.Instant
+java.time.Duration
+java.time.format.DateTimeFormatter">
+<meta property="og:updated_time" content="2017-02-20T09:26:12.343Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java8学习之新的日期和时间API">
+<meta name="twitter:description" content="过去，在Java中处理日期和时间时，无外乎这两个类(以及它们的子类)
+
+java.util.Date
+java.util.Calendar
+
+但它们固有一些缺陷，到了Java8，我们有了更多更好的选择，包括又不限于
+
+java.time.Instant
+java.time.Duration
+java.time.format.DateTimeFormatter">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> Java8学习之新的日期和时间API · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Java8学习之新的日期和时间API
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年2月16日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+      <div class="post-toc" id="post-toc">
+        <h2 class="post-toc-title">文章目录</h2>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#绝对时间"><span class="toc-text">绝对时间</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#本地日期-时间"><span class="toc-text">本地日期/时间</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#带时区的日期时间"><span class="toc-text">带时区的日期时间</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#格式化和解析"><span class="toc-text">格式化和解析</span></a></li></ol>
+        </div>
+      </div>
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>过去，在Java中处理日期和时间时，无外乎这两个类(以及它们的子类)</p>
+<ul>
+<li>java.util.Date</li>
+<li>java.util.Calendar</li>
+</ul>
+<p>但它们固有一些缺陷，到了Java8，我们有了更多更好的选择，包括又不限于</p>
+<ul>
+<li>java.time.Instant</li>
+<li>java.time.Duration</li>
+<li>java.time.format.DateTimeFormatter</li>
+</ul>
+<a id="more"></a>
+<h4 id="绝对时间"><a href="#绝对时间" class="headerlink" title="绝对时间"></a>绝对时间</h4><p>如果我们把时间看做一道长河（时间轴），那么其上的每一个<em>点</em>，就是一个<em>瞬间</em>(Instant)，用java.time.Instant类的对象表示。Instant类可以表示的时间范围非常之广，从-1000000000-01-01 00:00:00到+1000000000-12-31 23:59:59.999999999，和先前的java.util.Date类似，仍然取1970-01-01 00:00:00作为时间的纪元，这3个特殊的时间点，可以通过Instant.MIN，Instant.MAX和Instant.EPOCH加以验证。若要取得当前的瞬时值，可以使用<em>now</em>方法。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//获得Instant可以表示的最小、最大时间点</span></div><div class="line">Instant min = Instant.MIN;</div><div class="line">Instant max = Instant.MAX;</div><div class="line">System.out.println(min);</div><div class="line">System.out.println(max);</div><div class="line"><span class="comment">//获取Instant时间纪元和当前时间点</span></div><div class="line">Instant epoch = Instant.EPOCH;</div><div class="line">Instant now = Instant.now();</div><div class="line">System.out.println(epoch);</div><div class="line">System.out.println(now);</div></pre></td></tr></table></figure></p>
+<p>两个Instant之间的距离，被称为<em>持续时间</em>(Duration)，要计算Duration，使用<em>between</em>方法，然后再通过<em>toNanos|Seconds|Days</em>等方法得到这段时间对应的，从纳秒到天，不同精度的表示。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//计算两个Instant之间的Duration</span></div><div class="line">Duration duration = Duration.between(epoch, now);</div><div class="line">System.out.println(duration);</div><div class="line">System.out.println(duration.toMillis());</div><div class="line">System.out.println(duration.toDays());</div></pre></td></tr></table></figure></p>
+<p>无论是Instant对象还是Duration对象，它们都是不可变的，底层分实际上由一个long型和一个int型整数组成，前者表示这个时间点距离时间纪元的<em>秒</em>数，后者表示一个最多可以精确到纳秒的调整值，注意这里已经不再是距离时间纪元的<em>毫秒</em>数了。</p>
+<p>此外，二者均提供了诸多数学操作，即包括了做四则运算的<em>plus|minus[Nanos|Seconds|Days]</em>、<em>multiplied|dividedBy</em>，也有类似<em>abs</em>、<em>isZero|Negative</em>这样的方法。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//对Instant和Duration进行数学操作</span></div><div class="line">Instant nowPlusDays = now.plus(<span class="number">1</span>, ChronoUnit.DAYS);</div><div class="line">System.out.println(nowPlusDays);</div><div class="line">Instant nowMinusSeconds = now.minusSeconds(<span class="number">86400</span>);</div><div class="line">System.out.println(nowMinusSeconds);</div><div class="line">Duration durationMultiplyFactor = duration.multipliedBy(<span class="number">3</span>);</div><div class="line">System.out.println(durationMultiplyFactor.toMillis());</div><div class="line">Duration durationDivideFactor = duration.dividedBy(<span class="number">2</span>);</div><div class="line">System.out.println(durationDivideFactor.toMillis());</div><div class="line">System.out.println(duration.isNegative());</div></pre></td></tr></table></figure></p>
+<h4 id="本地日期-时间"><a href="#本地日期-时间" class="headerlink" title="本地日期/时间"></a>本地日期/时间</h4><p>Java8提供了LocalDate、LocalTime、LocalDateTime这么3个类来表示本地日期/时间。用这3个类所表示的时间，是无法对应在Instant上的，主要原因是它缺少了时区等信息，也就无法准确地与一个瞬时点对应起来。</p>
+<p>可以使用<em>now</em>、<em>of</em>方法构造LocalDate、LocalTime、LocalDateTime对象，先前Date类的几个奇怪设计：月份取值0-11、年份是目标年份与1900之差等都不复存在了，而且类似于Instant和Duration，提供了<em>plus|minus[Days|Weeks|Months|Years]</em>等方法可用于数学计算。此外，两个LocalDateTime只差不再是Duration，而是<em>时段</em>(Period)。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//构造本地日期/时间</span></div><div class="line">LocalDate nowDate = LocalDate.now();</div><div class="line">LocalTime nowTime = LocalTime.now();</div><div class="line">LocalDateTime ofDateTime = LocalDateTime.of(<span class="number">2017</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">8</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</div><div class="line">System.out.println(nowDate);</div><div class="line">System.out.println(nowTime);</div><div class="line">System.out.println(ofDateTime);</div><div class="line"><span class="comment">//数学计算</span></div><div class="line">LocalDate nowDateMinusYears = nowDate.minusYears(<span class="number">1</span>);</div><div class="line">System.out.println(nowDateMinusYears);</div><div class="line">System.out.println(nowDateMinusYears.isLeapYear());</div><div class="line"><span class="comment">//计算两个LocalDateTime之间的Period</span></div><div class="line">LocalDate springFestival = LocalDate.of(<span class="number">2017</span>, <span class="number">1</span>, <span class="number">1</span>);</div><div class="line">LocalDate nationalDay = LocalDate.of(<span class="number">2017</span>, <span class="number">10</span>, <span class="number">1</span>);</div><div class="line">Period period = springFestival.until(nationalDay);</div><div class="line">System.out.println(period);</div><div class="line"><span class="keyword">long</span> periodInDays = springFestival.until(nationalDay, ChronoUnit.DAYS);</div><div class="line">System.out.println(periodInDays);</div></pre></td></tr></table></figure></p>
+<p>如果要获取/设置已经用LocalDate、LocalTime、LocalDateTime表示的某个时间中某个字段(如：年、月、日、时、分、秒)的值，对应的也有<em>get|withYear|Minute</em>等方法(略好奇为什么设置不是set而是with……)。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//字段值操作</span></div><div class="line">Month month = nowDate.getMonth();</div><div class="line">DayOfWeek dayOfWeek = nowDate.getDayOfWeek();</div><div class="line">System.out.println(month);</div><div class="line">System.out.println(dayOfWeek);</div><div class="line">LocalTime withTime = nowTime.withHour(<span class="number">0</span>).withMinute(<span class="number">0</span>).withSecond(<span class="number">0</span>).withNano(<span class="number">0</span>);</div><div class="line">System.out.println(withTime);</div></pre></td></tr></table></figure></p>
+<p>对LocalDate而言，<em>with</em>方法还有一种特殊的用法，就是通过<em>日期校正器</em>(TemporalAdjusters)，直接计算出<em>first|lastDayOf(Next)Month|Year</em>(今年/本月/次月/明年的第一天/最后一天)、<em>first/last/dayOfweekInMonth</em>(本月中的第一个/最后一个/第X个星期X)、<em>next|previous(OrSame)</em>(下一个/上一个(或同一个)星期X)。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//使用TemporalAdjusters</span></div><div class="line">LocalDate aDate = LocalDate.of(<span class="number">2017</span>, <span class="number">2</span>, <span class="number">1</span>);</div><div class="line">LocalDate firstDayOfNextMonth = aDate.with(TemporalAdjusters.firstDayOfNextMonth());</div><div class="line">LocalDate lastDayOfYear = aDate.with(TemporalAdjusters.lastDayOfYear());</div><div class="line">LocalDate firstFridayInMonth = aDate.with(TemporalAdjusters.firstInMonth(DayOfWeek.FRIDAY));</div><div class="line">LocalDate nextOrSameWednesday = aDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY));</div><div class="line">LocalDate previousWednesday = aDate.with(TemporalAdjusters.previous(DayOfWeek.WEDNESDAY));</div><div class="line">System.out.println(firstDayOfNextMonth);</div><div class="line">System.out.println(lastDayOfYear);</div><div class="line">System.out.println(firstFridayInMonth);</div><div class="line">System.out.println(nextOrSameWednesday);</div><div class="line">System.out.println(previousWednesday);</div></pre></td></tr></table></figure></p>
+<h4 id="带时区的日期时间"><a href="#带时区的日期时间" class="headerlink" title="带时区的日期时间"></a>带时区的日期时间</h4><p>虽说时区完全就是一个人为的概念，但带有时区的时间反而更符合实际情况，Java8用ZonedDateTime来表示这种时间。</p>
+<p>首先，它可以和LocalDateTime一样直接构造出来，无非是多了一个表示时区ZoneId作为参数。其次，它也可以从LocalDateTime转化而来，或者转化为LocalDateTime，用的是<em>LocalDateTime#atZone</em>和<em>ZonedDateTime#toLocalDateTime</em>方法。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">LocalDateTime localDateTime = LocalDateTime.of(<span class="number">2017</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</div><div class="line">ZonedDateTime fromLocalDateTime = localDateTime.atZone(ZoneId.of(<span class="string">"UTC"</span>));</div><div class="line">System.out.println(fromLocalDateTime);</div><div class="line">ZonedDateTime ofZonedDateTime = ZonedDateTime.of(<span class="number">2017</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, ZoneId.of(<span class="string">"UTC"</span>));</div><div class="line">System.out.println(ofZonedDateTime);</div><div class="line">LocalDateTime toLocalDateTime = ofZonedDateTime.toLocalDateTime();</div><div class="line">System.out.println(toLocalDateTime);</div></pre></td></tr></table></figure></p>
+<p>ZonedDateTime和上面其他所有类一样，也提供了非常多用于数学计算的方法，当然由于涉及时区、夏令时等的计算，应当在实现上会更复杂，不过在中国很少开发涉及这些的程序，我也就没有过多去关注了。</p>
+<h4 id="格式化和解析"><a href="#格式化和解析" class="headerlink" title="格式化和解析"></a>格式化和解析</h4><p>个人觉得格式化和解析这一段同以前的java.text.DateFormat和java.text.SimpleDateFormat类似乎没有太大的变化，同样可以把一个日期/时间做/从3种不同形式的格式化/解析，分别是标准格式、本地化格式和自定义格式<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">LocalDateTime now = LocalDateTime.now();</div><div class="line"><span class="comment">//标准格式</span></div><div class="line">String isoLocalDateTime = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(now);</div><div class="line">System.out.println(isoLocalDateTime);</div><div class="line"><span class="comment">//本地化格式</span></div><div class="line">String fullLocalizedDateTime = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(now);</div><div class="line">System.out.println(fullLocalizedDateTime);</div><div class="line"><span class="comment">//自定义格式</span></div><div class="line">String patternDateTime = DateTimeFormatter.ofPattern(<span class="string">"yyyy-MM-dd HH:mm:ss.SSS"</span>).format(now);</div><div class="line">System.out.println(patternDateTime);</div><div class="line"><span class="comment">//解析</span></div><div class="line">ZonedDateTime zonedDateTime = ZonedDateTime.parse(<span class="string">"2017-01-01T00:00:00.000+08:00[Asia/Shanghai]"</span>,DateTimeFormatter.ISO_ZONED_DATE_TIME);</div><div class="line">System.out.println(zonedDateTime);</div></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2017/02/09/java8-the-stream-api/">
+        <span class="next-text nav-default">Java8学习之Stream API</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2017/02/16/java8-the-new-date-and-time-api/';
+        
+            this.page.identifier = 'c91290e0-f435-11e6-8265-2f28f3029cd8';
+        
+        this.page.title = 'Java8学习之新的日期和时间API';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>
