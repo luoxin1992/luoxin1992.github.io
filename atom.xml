@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.lx1992.com.cn/"/>
-  <updated>2017-03-08T14:18:04.258Z</updated>
+  <updated>2017-05-13T10:50:22.969Z</updated>
   <id>http://www.lx1992.com.cn/</id>
   
   <author>
@@ -16,136 +16,26 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>2018年校园招聘行程小记</title>
-    <link href="http://www.lx1992.com.cn/2017/03/08/2018-campus-recruiting/"/>
-    <id>http://www.lx1992.com.cn/2017/03/08/2018-campus-recruiting/</id>
-    <published>2017-03-08T14:18:04.258Z</published>
-    <updated>2017-03-08T14:18:04.258Z</updated>
+    <title>java.util.Properties踩坑记</title>
+    <link href="http://www.lx1992.com.cn/2017/05/13/stepped-pit-into-java-util-properties/"/>
+    <id>http://www.lx1992.com.cn/2017/05/13/stepped-pit-into-java-util-properties/</id>
+    <published>2017-05-13T10:24:46.000Z</published>
+    <updated>2017-05-13T10:50:22.969Z</updated>
     
-    <content type="html"><![CDATA[<p>此文整理了我通过各种渠道收集来的2018年互联网公司校招信息，在未来一段时间内将会置顶。<br><a id="more"></a></p>
-<table>
-<thead>
-<tr>
-<th>发布时间</th>
-<th>公司</th>
-<th>事业群/部门</th>
-<th>工作城市</th>
-<th>起止时间</th>
-<th>网申地址/投递邮箱</th>
-<th>备注</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>2017.02.15</td>
-<td>华为</td>
-<td></td>
-<td>深圳/杭州</td>
-<td></td>
-<td><a href="http://career.huawei.com/recruitment/" target="_blank" rel="external">http://career.huawei.com/recruitment/</a></td>
-<td>杭厦</td>
-</tr>
-<tr>
-<td>2017.02.25</td>
-<td>京东</td>
-<td></td>
-<td>北京/上海/成都/南京</td>
-<td>2.24~4.4</td>
-<td><a href="http://campus.jd.com/" target="_blank" rel="external">http://campus.jd.com/</a></td>
-<td>2017实习生招聘</td>
-</tr>
-<tr>
-<td></td>
-<td>腾讯</td>
-<td></td>
-<td></td>
-<td>2.23~3.28</td>
-<td><a href="http://join.qq.com/techrecommend.php" target="_blank" rel="external">http://join.qq.com/techrecommend.php</a></td>
-<td>暑期实习生技术岗内推</td>
-</tr>
-<tr>
-<td>2017.02.24</td>
-<td>吉比特</td>
-<td></td>
-<td>厦门/深圳</td>
-<td></td>
-<td><a href="http://join.g-bits.com/" target="_blank" rel="external">http://join.g-bits.com/</a></td>
-<td></td>
-</tr>
-<tr>
-<td>2017.02.27</td>
-<td>360</td>
-<td></td>
-<td></td>
-<td>2.17~3.22</td>
-<td><a href="http://campus.chinahr.com/2017/360/" target="_blank" rel="external">http://campus.chinahr.com/2017/360/</a></td>
-<td></td>
-</tr>
-<tr>
-<td>2017.02.27</td>
-<td>招商银行信用卡中心</td>
-<td></td>
-<td></td>
-<td>2.27~4.4</td>
-<td><a href="http://cmbcc.zhiye.com/" target="_blank" rel="external">http://cmbcc.zhiye.com/</a></td>
-<td></td>
-</tr>
-<tr>
-<td>2017.03.01</td>
-<td>阿里巴巴</td>
-<td></td>
-<td></td>
-<td>3.1~4.21</td>
-<td><a href="https://campus.alibaba.com/index.htm" target="_blank" rel="external">https://campus.alibaba.com/index.htm</a></td>
-<td>2017实习生</td>
-</tr>
-<tr>
-<td>2017.03.01</td>
-<td>美团点评</td>
-<td></td>
-<td>北京/上海</td>
-<td></td>
-<td><a href="http://campus.meituan.com/" target="_blank" rel="external">http://campus.meituan.com/</a></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td>美团点评</td>
-<td>酒店旅游事业群</td>
-<td>北京/上海</td>
-<td></td>
-<td>hr.hb.neitui#meituan.com</td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td>唯品会</td>
-<td></td>
-<td>上海</td>
-<td></td>
-<td><a href="https://mxy.liepin.com/job/showxyejobdetail/?job_id=307682&amp;show_type=1" target="_blank" rel="external">https://mxy.liepin.com/job/showxyejobdetail/?job_id=307682&amp;show_type=1</a></td>
-<td></td>
-</tr>
-<tr>
-<td>2017.03.02</td>
-<td>蚂蚁金服</td>
-<td>财富事业部</td>
-<td>杭州/上海</td>
-<td></td>
-<td>faqi.yfq#alibaba-inc.com</td>
-<td>通信94级校友内推</td>
-</tr>
-</tbody>
-</table>
+    <content type="html"><![CDATA[<p>刚刚掉进java.util.Properties的坑里了……其实也好久没记博客了。java.util.Properties这个类继承至java.util.Hashtable&lt;Object, Object&gt;，常用来表示一些属性。<br><a id="more"></a></p>
+<p>问题发生在配置某个三方库上，其中有一处参数传入的正是若干属性包装成的Properties。鉴于它继承了Hashtable中的所有方法，我想当然地用了<code>java.util.Hashtable#put(java.lang.Object, java.lang.Object)</code>方法往里面放属性(碰巧属性值既有String类型，又有int、boolean类型，这个方法太和我意了～)，而后项目启动时就抛出了空指针。</p>
+<p>StackTrace显示出问题的地方是这个三方库从Properties中取出配置参数的几行代码，但是DEBUG看，Properties中各个属性都准确无误，进一步单步，发现了“神奇”的问题——一个明明存在的属性在<code>java.util.Properties#getProperty(java.lang.String)</code>时居然是null？！</p>
+<p>问题就出在这个getProperty方法上，下面是它的源码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">public String getProperty(String key) &#123;</div><div class="line">    Object oval = super.get(key);</div><div class="line">    String sval = (oval instanceof String) ? (String)oval : null;</div><div class="line">    return ((sval == null) &amp;&amp; (defaults != null)) ? defaults.getProperty(key) : sval;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>可以看到第3行这里，如果取出的属性值不是String类型，那么就将它置为null。虽然我不太理解为什么这样设计，但至少是吸取了一个教训，往Properties里放属性应当使用<code>java.util.Properties#setProperty(java.lang.String, java.lang.String)</code>方法，虽然它直接调用的还是父类的put方法，也就是让我掉坑里的那家伙，但人家通过形参限制了key、value都只能是String。</p>
 ]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;此文整理了我通过各种渠道收集来的2018年互联网公司校招信息，在未来一段时间内将会置顶。&lt;br&gt;
+      &lt;p&gt;刚刚掉进java.util.Properties的坑里了……其实也好久没记博客了。java.util.Properties这个类继承至java.util.Hashtable&amp;lt;Object, Object&amp;gt;，常用来表示一些属性。&lt;br&gt;
     
     </summary>
     
-      <category term="2018校招" scheme="http://www.lx1992.com.cn/categories/2018%E6%A0%A1%E6%8B%9B/"/>
+      <category term="这里有坑" scheme="http://www.lx1992.com.cn/categories/%E8%BF%99%E9%87%8C%E6%9C%89%E5%9D%91/"/>
     
     
   </entry>
@@ -775,7 +665,7 @@
     
     <content type="html"><![CDATA[<p>项目中许多地方都需要邮件通知功能。以开发工具为例，譬如，Gogs在版本库变化时可以通知团队成员、Redmine在项目（任务）进度变化时也有类似的功能，更进一步地，程序上线后将会配置相应的JVM监控，以便于发生线上故障时（程序抛出非预期的异常等）及时通知开发者处理。</p>
 <a id="more"></a>
-<p>但是，有几个问题需要留意。首先是如何发送邮件？自己搭建一套完整的邮件服务？真的这样做的话，可以以类似<a href="&#109;&#97;&#x69;&#108;&#x74;&#111;&#58;&#109;&#x61;&#x69;&#x6c;&#64;&#x6d;&#x79;&#x64;&#x6f;&#109;&#97;&#x69;&#x6e;&#x2e;&#99;&#111;&#x6d;">&#109;&#x61;&#x69;&#x6c;&#64;&#x6d;&#x79;&#x64;&#x6f;&#109;&#97;&#x69;&#x6e;&#x2e;&#99;&#111;&#x6d;</a>的名义发送邮件，看上去是逼格满满，可就算不考虑这个操作的复杂性，在这个垃圾邮件泛滥的时代，十有八九这种自己发送的邮件会面临各种限制。再者，更现实一点，这些程序都运行在内网主机上，如何向外部发送邮件呢？</p>
+<p>但是，有几个问题需要留意。首先是如何发送邮件？自己搭建一套完整的邮件服务？真的这样做的话，可以以类似<a href="&#x6d;&#x61;&#105;&#x6c;&#116;&#x6f;&#x3a;&#109;&#x61;&#105;&#x6c;&#x40;&#x6d;&#121;&#x64;&#x6f;&#x6d;&#x61;&#105;&#x6e;&#46;&#x63;&#x6f;&#x6d;">&#109;&#x61;&#105;&#x6c;&#x40;&#x6d;&#121;&#x64;&#x6f;&#x6d;&#x61;&#105;&#x6e;&#46;&#x63;&#x6f;&#x6d;</a>的名义发送邮件，看上去是逼格满满，可就算不考虑这个操作的复杂性，在这个垃圾邮件泛滥的时代，十有八九这种自己发送的邮件会面临各种限制。再者，更现实一点，这些程序都运行在内网主机上，如何向外部发送邮件呢？</p>
 <p>其实，使用邮件中继转发（relay）服务就可以完全解决上面这些所谓的“问题”。邮件中继转发，简单地说，就是邮件的最终递送仍旧由外部SMTP服务完成，163、QQ、Gmail什么的都可以，他们不是更专业吗？而我们的邮件服务器只是扮演一个代理的作用而已。</p>
 <p>肩负邮件中继转发这一使命的，也就是本文的主角——Postfix。想要详细学习了解的同学可以戳<a href="https://en.wikipedia.org/wiki/postfix_(software" target="_blank" rel="external">这里</a>)。在本例中，我们的程序将要发送的邮件交给Postfix，然后就没有然后了，完全不知道，也不需要知道邮件最后怎么样了。而收到邮件的Postfix，就像我们在邮件客户端（Foxmail、Thunderbird等）里点击“发送”按钮一般，将邮件交由配置好的外部SMTP服务。</p>
 <p>下面直接介绍开始配置的过程。</p>

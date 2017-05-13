@@ -11,7 +11,7 @@
 
 
 
-  <meta name="description" content="分类"/>
+  <meta name="description" content="java.util.Properties踩坑记"/>
 
 
 
@@ -28,16 +28,19 @@
 
 
 
-<link rel="canonical" href="http://www.lx1992.com.cn/categories/"/>
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/05/13/stepped-pit-into-java-util-properties/"/>
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="分类">
-<meta property="og:url" content="http://www.lx1992.com.cn/categories/index.html">
+<meta name="description" content="刚刚掉进java.util.Properties的坑里了……其实也好久没记博客了。java.util.Properties这个类继承至java.util.Hashtable&amp;lt;Object, Object&amp;gt;，常用来表示一些属性。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java.util.Properties踩坑记">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/05/13/stepped-pit-into-java-util-properties/index.html">
 <meta property="og:site_name" content="LuoXin's World">
-<meta property="og:updated_time" content="2017-01-26T14:08:05.803Z">
+<meta property="og:description" content="刚刚掉进java.util.Properties的坑里了……其实也好久没记博客了。java.util.Properties这个类继承至java.util.Hashtable&amp;lt;Object, Object&amp;gt;，常用来表示一些属性。">
+<meta property="og:updated_time" content="2017-05-13T10:50:22.969Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="分类">
+<meta name="twitter:title" content="java.util.Properties踩坑记">
+<meta name="twitter:description" content="刚刚掉进java.util.Properties的坑里了……其实也好久没记博客了。java.util.Properties这个类继承至java.util.Hashtable&amp;lt;Object, Object&amp;gt;，常用来表示一些属性。">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
@@ -73,7 +76,7 @@
 
 
 
-    <title> 分类 · LuoXin's World </title>
+    <title> java.util.Properties踩坑记 · LuoXin's World </title>
   </head>
 
   <body>
@@ -159,17 +162,73 @@
         <div class="content-wrapper">
           <div id="content" class="content">
             
-  <div class="categories">
-    <div class="categories-title">
-      目前共计 13 个分类
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          java.util.Properties踩坑记
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年5月13日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>刚刚掉进java.util.Properties的坑里了……其实也好久没记博客了。java.util.Properties这个类继承至java.util.Hashtable&lt;Object, Object&gt;，常用来表示一些属性。<br><a id="more"></a></p>
+<p>问题发生在配置某个三方库上，其中有一处参数传入的正是若干属性包装成的Properties。鉴于它继承了Hashtable中的所有方法，我想当然地用了<code>java.util.Hashtable#put(java.lang.Object, java.lang.Object)</code>方法往里面放属性(碰巧属性值既有String类型，又有int、boolean类型，这个方法太和我意了～)，而后项目启动时就抛出了空指针。</p>
+<p>StackTrace显示出问题的地方是这个三方库从Properties中取出配置参数的几行代码，但是DEBUG看，Properties中各个属性都准确无误，进一步单步，发现了“神奇”的问题——一个明明存在的属性在<code>java.util.Properties#getProperty(java.lang.String)</code>时居然是null？！</p>
+<p>问题就出在这个getProperty方法上，下面是它的源码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">public String getProperty(String key) &#123;</div><div class="line">    Object oval = super.get(key);</div><div class="line">    String sval = (oval instanceof String) ? (String)oval : null;</div><div class="line">    return ((sval == null) &amp;&amp; (defaults != null)) ? defaults.getProperty(key) : sval;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>可以看到第3行这里，如果取出的属性值不是String类型，那么就将它置为null。虽然我不太理解为什么这样设计，但至少是吸取了一个教训，往Properties里放属性应当使用<code>java.util.Properties#setProperty(java.lang.String, java.lang.String)</code>方法，虽然它直接调用的还是父类的put方法，也就是让我掉坑里的那家伙，但人家通过形参限制了key、value都只能是String。</p>
+
+      
     </div>
-    <div class="categories-tags">
-      <a class="category-link" href="/categories/2018校招/">2018校招<span class="category-count">1</span></a> <a class="category-link" href="/categories/android/">Android<span class="category-count">1</span></a> <a class="category-link" href="/categories/disconf/">Disconf<span class="category-count">1</span></a> <a class="category-link" href="/categories/gogs/">Gogs<span class="category-count">1</span></a> <a class="category-link" href="/categories/java8/">Java8<span class="category-count">4</span></a> <a class="category-link" href="/categories/linux/">Linux<span class="category-count">7</span></a> <a class="category-link" href="/categories/mysql/">MySQL<span class="category-count">2</span></a> <a class="category-link" href="/categories/postfix/">Postfix<span class="category-count">1</span></a> <a class="category-link" href="/categories/redis/">Redis<span class="category-count">1</span></a> <a class="category-link" href="/categories/redmine/">Redmine<span class="category-count">1</span></a> <a class="category-link" href="/categories/sonarqube/">Sonarqube<span class="category-count">1</span></a> <a class="category-link" href="/categories/这里有坑/">这里有坑<span class="category-count">1</span></a>
-    </div>
-  </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2017/03/07/2018-campus-recruiting-antgroup-first-interview/">
+        <span class="next-text nav-default">2018校招之蚂蚁金服初面</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
 
           </div>
           
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
 
         </div>
       </main>
@@ -243,11 +302,11 @@
 
   <script type="text/javascript">
     var disqus_config = function () {
-        this.page.url = 'http://www.lx1992.com.cn/categories/index.html';
+        this.page.url = 'http://www.lx1992.com.cn/2017/05/13/stepped-pit-into-java-util-properties/';
         
-            this.page.identifier = '9570e9b7-2195-4f62-871e-118f46b96a45';
+            this.page.identifier = '62f42830-37c6-11e7-b070-ab19cdc2df70';
         
-        this.page.title = '分类';
+        this.page.title = 'java.util.Properties踩坑记';
     };
     (function() {
     var d = document, s = d.createElement('script');
