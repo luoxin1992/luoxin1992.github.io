@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="WebSocket基本原理与生命周期"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/06/25/java-web-socket-basic-and-lifecycle/"/>
+
+
+<meta name="description" content="距离上次写博客已经又过去很长一段时间了，这段时间里我一直在做老板的一个项目，而这个项目呢，包括后端、PC客户端和Web管理后台三个部分。其中的PC客户端，因为需要和后端双向通信，所以再用HTTP就不那么和谐了，技术选型的时候考察了下，最后选定了WebSocket。所以这几天打算更新几篇关于Java WebSocket的文章。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WebSocket基本原理与生命周期">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/06/25/java-web-socket-basic-and-lifecycle/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="距离上次写博客已经又过去很长一段时间了，这段时间里我一直在做老板的一个项目，而这个项目呢，包括后端、PC客户端和Web管理后台三个部分。其中的PC客户端，因为需要和后端双向通信，所以再用HTTP就不那么和谐了，技术选型的时候考察了下，最后选定了WebSocket。所以这几天打算更新几篇关于Java WebSocket的文章。">
+<meta property="og:updated_time" content="2017-06-25T09:51:53.482Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="WebSocket基本原理与生命周期">
+<meta name="twitter:description" content="距离上次写博客已经又过去很长一段时间了，这段时间里我一直在做老板的一个项目，而这个项目呢，包括后端、PC客户端和Web管理后台三个部分。其中的PC客户端，因为需要和后端双向通信，所以再用HTTP就不那么和谐了，技术选型的时候考察了下，最后选定了WebSocket。所以这几天打算更新几篇关于Java WebSocket的文章。">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> WebSocket基本原理与生命周期 · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          WebSocket基本原理与生命周期
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年6月25日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+      <div class="post-toc" id="post-toc">
+        <h2 class="post-toc-title">文章目录</h2>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#WebSocket简介"><span class="toc-text">WebSocket简介</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#实现Echo服务端"><span class="toc-text">实现Echo服务端</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#实现Echo客户端"><span class="toc-text">实现Echo客户端</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#WebSocket连接的建立过程"><span class="toc-text">WebSocket连接的建立过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#WebSocket生命周期"><span class="toc-text">WebSocket生命周期</span></a></li></ol>
+        </div>
+      </div>
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>距离上次写博客已经又过去很长一段时间了，这段时间里我一直在做老板的一个项目，而这个项目呢，包括后端、PC客户端和Web管理后台三个部分。其中的PC客户端，因为需要和后端双向通信，所以再用HTTP就不那么和谐了，技术选型的时候考察了下，最后选定了WebSocket。所以这几天打算更新几篇关于Java WebSocket的文章。</p>
+<a id="more"></a>
+<h4 id="WebSocket简介"><a href="#WebSocket简介" class="headerlink" title="WebSocket简介"></a>WebSocket简介</h4><p>今天上第一篇，先简单说说WebSocket。这货应当算是早有耳闻的，当年本科毕设的时候也需要类似的双向通信，当时也考虑过HTTP长连接，或者类似Comet这种技术(直接走Socket通信就不在考虑范围内了，毕竟太底层了)。</p>
+<p>回到WebSocket本身，它是H5中的一项核心技术，实现了客户端和服务端建立起TCP连接之后全双工地通信，连接会一直保活，直到其中一方决定终止连接(也可能因为长时间空闲或者某些非正常因素导致连接断开)，这就避免了每次通信开始前重新建立连接的昂贵代价，也避免了每次获取到许多重复数据的低效率，更实现了服务器主动将数据推送给客户端的特性。</p>
+<p>WebSocket协议主要使用2种帧：控制帧和数据帧。其中控制帧用于执行一些协议内部功能逻辑，又分为3种：Close、Ping和Pong，Close即请求关闭连接，Ping-Pong看起来天生一对，常被用于心跳检测；数据帧携带了应用程序数据，主要分为2大类：Text和Binary，顾名思义，前者携带文本消息，后者携带二进制消息，另外注意数据帧可以是完整的(Whole)，也可以是部分的(Partial)。</p>
+<p>Java EE 7开始提供的WebSocket相关的API，可以参考<a href="http://www.oracle.com/technetwork/cn/articles/java/jsr356-1937161-zhs.html" target="_blank" rel="external">JSR 356</a>。</p>
+<h4 id="实现Echo服务端"><a href="#实现Echo服务端" class="headerlink" title="实现Echo服务端"></a>实现Echo服务端</h4><p>要实现WebSocket服务端(以一个简单的Echo服务为例)，有两种方式，一种是注解式，另一种是编程式(似曾相识啊……)。</p>
+<p>注解式类似这样<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">@ServerEndpoint(&quot;/annotation/echo&quot;)</div><div class="line">public class AnnotationEchoServer &#123;</div><div class="line">	@OnMessage</div><div class="line">	public String echo(String message) &#123;</div><div class="line">		return message;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里用到2个注解，@ServerEndpoint注解在类上，它告诉Web容器，这个类是一个服务器“端点”(即WebSocket通信的一端)，连接它的URI是“/echo”；而@OnMessage注解在方法上，表明这个方法将处理OnMessage这个WebSocket事件(具体的在下文“生命周期”中展开)，即这个方法将处理这个端点的入站消息，处理的方法是将收到的消息原封不动的再发送回去(即Echo)，</p>
+<p>而编程式写法则是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">public class ProgrammaticEchoServerConfig implements ServerApplicationConfig &#123;</div><div class="line">	@Override</div><div class="line">	public Set&lt;Class&lt;?&gt;&gt; getAnnotatedEndpointClasses(Set&lt;Class&lt;?&gt;&gt; arg0) &#123;</div><div class="line">		return arg0;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	@Override</div><div class="line">	public Set&lt;ServerEndpointConfig&gt; getEndpointConfigs(Set&lt;Class&lt;? extends Endpoint&gt;&gt; arg0) &#123;</div><div class="line">		Set&lt;ServerEndpointConfig&gt; configs = new HashSet&lt;&gt;();</div><div class="line">		ServerEndpointConfig config = ServerEndpointConfig.Builder</div><div class="line">				.create(ProgrammaticEchoServer.class, &quot;/programmatic/echo&quot;).build();</div><div class="line">		configs.add(config);</div><div class="line">		return configs;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">public class ProgrammaticEchoServer extends Endpoint &#123;</div><div class="line">	private Session session;</div><div class="line"></div><div class="line">	@Override</div><div class="line">	public void onOpen(Session session, EndpointConfig endpointConfig) &#123;</div><div class="line">		this.session = session;</div><div class="line">		session.addMessageHandler(String.class, message -&gt; &#123;</div><div class="line">			try &#123;</div><div class="line">				this.session.getBasicRemote().sendText(message);</div><div class="line">			&#125; catch (IOException e) &#123;</div><div class="line">				e.printStackTrace();</div><div class="line">			&#125;</div><div class="line">		&#125;);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>代码要长了不少……这里涉及2个类，配置类ProgrammaticEchoServerConfig实现了ServerApplicationConfig接口，接口中的2个方法分别是Web容器启动时扫描到的注解式端点和编程式端点的类的实例，这里我们只关心编程式端点，并为其指定了URI——“/programmatic/echo”；</p>
+<p>另一个类是端点的实现类ProgrammaticEchoServer，它继承自Endpoint，有一个抽象方法onOpen用于处理客户端连接事件，我们需要在每一个连接上的Session添加MessageHandler(即说明如何处理收到的各类消息)，这里处理的方式和注解式端点中的处理是一样的。要通过已知的Session向会话的另一方发送消息，需要RemoteEndpoint对象，这个对象又分为两种，Basic和Async——一个是同步的，一个是异步的。</p>
+<h4 id="实现Echo客户端"><a href="#实现Echo客户端" class="headerlink" title="实现Echo客户端"></a>实现Echo客户端</h4><p>仅有服务端当然是不能建立通讯的，我们还要看看客户端怎么做，功能上嘛：实现当连接建立的时候向服务端发送本机系统时间，并接收服务端的Echo，代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line">import java.io.IOException;</div><div class="line">import java.net.URI;</div><div class="line">import java.net.URISyntaxException;</div><div class="line">import java.time.LocalDateTime;</div><div class="line">import java.time.format.DateTimeFormatter;</div><div class="line">import java.time.format.FormatStyle;</div><div class="line"></div><div class="line">import javax.websocket.ClientEndpoint;</div><div class="line">import javax.websocket.CloseReason;</div><div class="line">import javax.websocket.ContainerProvider;</div><div class="line">import javax.websocket.DeploymentException;</div><div class="line">import javax.websocket.OnMessage;</div><div class="line">import javax.websocket.OnOpen;</div><div class="line">import javax.websocket.SendHandler;</div><div class="line">import javax.websocket.SendResult;</div><div class="line">import javax.websocket.Session;</div><div class="line">import javax.websocket.WebSocketContainer;</div><div class="line"></div><div class="line">@ClientEndpoint</div><div class="line">public class EchoClient &#123;</div><div class="line">	private Session session;</div><div class="line"></div><div class="line">	@OnOpen</div><div class="line">	public void onOpen(Session session) &#123;</div><div class="line">		this.session = session;</div><div class="line">		System.out.println(&quot;Server Connect: &quot; + session.getId());</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	@OnMessage</div><div class="line">	public void onMessage(String message) &#123;</div><div class="line">		System.out.println(&quot;Client receive: &quot; + message);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	public void connectServer() throws DeploymentException, IOException, URISyntaxException &#123;</div><div class="line">		WebSocketContainer container = ContainerProvider.getWebSocketContainer();</div><div class="line">		container.connectToServer(this, new URI(&quot;ws://localhost:8080/websocket-server/programmatic/echo&quot;));</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	public void sendMessage() &#123;</div><div class="line">		String message = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(LocalDateTime.now());</div><div class="line">		this.session.getAsyncRemote().sendText(message, new SendHandler() &#123;</div><div class="line">			public void onResult(SendResult result) &#123;</div><div class="line">				if (result.isOK()) &#123;</div><div class="line">					System.out.println(&quot;Client send: &quot; + message);</div><div class="line">				&#125; else &#123;</div><div class="line">					System.out.println(&quot;Client Error: &quot; + result.getException().getMessage());</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	public static void main(String[] args) throws Exception &#123;</div><div class="line">		EchoClient echoClient = new EchoClient();</div><div class="line">		echoClient.connectServer();</div><div class="line">		echoClient.sendMessage();</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>特别注意，JSR 356提供的只是WebSocket的接口，并没有具体的实现，因此如果遇到这样的错误并不奇怪</p>
+<blockquote>
+<p>Exception in thread “main” java.lang.RuntimeException: Could not find an implementation class.<br>    at javax.websocket.ContainerProvider.getWebSocketContainer(ContainerProvider.java:73)</p>
+</blockquote>
+<p>解决的方法是引入包含JSR 356实现的jar包，Jetty、Glassfish等Web容器均提供了类似实现。</p>
+<h4 id="WebSocket连接的建立过程"><a href="#WebSocket连接的建立过程" class="headerlink" title="WebSocket连接的建立过程"></a>WebSocket连接的建立过程</h4><p>WebSocket连接的建立过程仍然是基于一次特殊的HTTP请求/响应，这个过程称为“握手”，我们可以通过Charles或其他同类抓包工具简单看一下这个过程。客户端的请求(部分)和服务端的响应(部分)分别如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">GET /websocket-server/annotation/echo HTTP/1.1</div><div class="line">Sec-WebSocket-Version: 13</div><div class="line">Sec-WebSocket-Extensions: permessage-deflate</div><div class="line">Sec-WebSocket-Key: S16Xokvx3+n8xHbqfV5FOA==</div><div class="line">Upgrade: websocket</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">HTTP/1.1 101 </div><div class="line">Upgrade: websocket</div><div class="line">Connection: upgrade</div><div class="line">Sec-WebSocket-Accept: Q5dJ+WYxjdu4hkPWZasBIXhwxh4=</div><div class="line">Sec-WebSocket-Extensions: permessage-deflate</div></pre></td></tr></table></figure>
+<p>可以看到客户端仍然是发起了一个HTTP请求，只不过在Header中要求升级(Upgrade)到WebSocket协议，这个请求头在HTTP升级HTTPS时也会见到；服务端则给出了101状态码，该状态码表示协议切换成功；至于其他Header，表示的是这次连接关于安全性、子协议、扩展的方面的参数。</p>
+<h4 id="WebSocket生命周期"><a href="#WebSocket生命周期" class="headerlink" title="WebSocket生命周期"></a>WebSocket生命周期</h4><p>与其说WebSocket的生命周期，不如认为是WebSocket连接存续期间可能发生的事件，分为打开、消息、错误、关闭4种。</p>
+<p>“打开”永远是第一个生命周期事件，它用于指示到另一端的连接已经建立；打开事件之后，参与通信的双方就可以互相发送消息了，双方的每一次对话都会触发“消息”事件；对话过程中可能发生各种错误，此时将触发“错误”事件，错误可能是致命的(导致连接关闭)，也可能只是导致这次会话不能被正确处理；最后，当一端决定结束会话，将产生“关闭”事件。</p>
+<p>这些事件可以一对一地映射到Java API中，对应注解式写法是以下4个注解<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">@ServerEndpoint(&quot;/annotation/echo&quot;)</div><div class="line">public class AnnotationEchoServer &#123;</div><div class="line">	@OnOpen</div><div class="line">	public void onOpen(Session session, EndpointConfig config) &#123;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	@OnMessage</div><div class="line">	public void onMessage(Session session, String message) &#123;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	@OnError</div><div class="line">	public void onError(Session session, Throwable throwable) &#123;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	@OnClose</div><div class="line">	public void onClose(Session session, CloseReason reason) &#123;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>而编程式写法则是这么3个方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">public abstract class Endpoint &#123;</div><div class="line">    public abstract void onOpen(Session session, EndpointConfig config)；</div><div class="line">    </div><div class="line">    public void onClose(Session session, CloseReason closeReason) &#123;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    public void onError(Session session, Throwable thr) &#123;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>其中的@OnOpen注解和onOpen方法等，在前边已经有出现过。另外注意注解式写法中，4个方法的参数类型、顺序等都不是唯一的，具体用法可以参考<a href="https://docs.oracle.com/javaee/7/api/javax/websocket/package-summary.html" target="_blank" rel="external">API文档</a>。</p>
+<p>此外，WebSocket编程模型与HTTP(Servlet)还有一点重大差异，那就是WebSocket实现内部提供了“同一个连接不会在同一时间被多个事件线程调用”的保证，这是不是就意味着我们在开发的时候不需要考虑这方面的并发了？</p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2017/07/18/campus-recruiting-antfin-1/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">2018校招蚂蚁金服一面</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2017/05/13/stepped-pit-into-java-util-properties/">
+        <span class="next-text nav-default">java.util.Properties踩坑记</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2017/06/25/java-web-socket-basic-and-lifecycle/';
+        
+            this.page.identifier = '54a45cc0-596b-11e7-82ec-8b7c79b6bb94';
+        
+        this.page.title = 'WebSocket基本原理与生命周期';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>

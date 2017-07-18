@@ -4,6 +4,65 @@
   
     
     <entry>
+      <title><![CDATA[2018校招蚂蚁金服一面]]></title>
+      <url>http://www.lx1992.com.cn/2017/07/18/campus-recruiting-antfin-1/</url>
+      <content type="html"><![CDATA[<p>2018年的春招来得比往年都早，这周投了蚂蚁金服内推，刚刚接到一面电话，简记如下。  </p>
+<ol>
+<li>介绍实习项目(实习项目采用微服务架构，引出的问题2和3)</li>
+<li>(实习项目)微服务的实现，如何做服务发布和服务发现</li>
+<li>服务发现以后，服务中心还起哪些作用</li>
+<li>事务四特性：ACID(原子性atomicity、一致性consistency、隔离性isolation、持久性durability)</li>
+<li>分布式数据库如何实现ACID</li>
+<li>分布式ID生成器：SnowFlake算法、唯一性保证、高可用的保证(参考美团Leaf项目)</li>
+<li>ArrayList和LinkedList的区别，具体应用场景</li>
+<li>hashCode和equals方法</li>
+<li>HashMap内部结构，散列冲突的处理(注意JDK8与之前版本实现不一样)，是否线程安全</li>
+<li>序列化</li>
+<li>JVM内存类型(堆内存、栈帧……)，堆内存类型(持久代、年老代、年轻代)，GC类型(Young GC、Full GC)、GC算法(串行，并行，G1……)、GC方法(引用计数 VS 可达性分析)、GC日志</li>
+<li>线程状态及转化</li>
+<li>StackOverFlow发生的场景，其他OOM</li>
+<li>分库分表的实现，分库分表的排序</li>
+<li>AOP的关键概念，代理模式(JDK动态代理和CgLib代理)</li>
+<li>常见加密算法</li>
+</ol>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[WebSocket基本原理与生命周期]]></title>
+      <url>http://www.lx1992.com.cn/2017/06/25/java-web-socket-basic-and-lifecycle/</url>
+      <content type="html"><![CDATA[<p>距离上次写博客已经又过去很长一段时间了，这段时间里我一直在做老板的一个项目，而这个项目呢，包括后端、PC客户端和Web管理后台三个部分。其中的PC客户端，因为需要和后端双向通信，所以再用HTTP就不那么和谐了，技术选型的时候考察了下，最后选定了WebSocket。所以这几天打算更新几篇关于Java WebSocket的文章。</p>
+<a id="more"></a>
+<h4 id="WebSocket简介"><a href="#WebSocket简介" class="headerlink" title="WebSocket简介"></a>WebSocket简介</h4><p>今天上第一篇，先简单说说WebSocket。这货应当算是早有耳闻的，当年本科毕设的时候也需要类似的双向通信，当时也考虑过HTTP长连接，或者类似Comet这种技术(直接走Socket通信就不在考虑范围内了，毕竟太底层了)。</p>
+<p>回到WebSocket本身，它是H5中的一项核心技术，实现了客户端和服务端建立起TCP连接之后全双工地通信，连接会一直保活，直到其中一方决定终止连接(也可能因为长时间空闲或者某些非正常因素导致连接断开)，这就避免了每次通信开始前重新建立连接的昂贵代价，也避免了每次获取到许多重复数据的低效率，更实现了服务器主动将数据推送给客户端的特性。</p>
+<p>WebSocket协议主要使用2种帧：控制帧和数据帧。其中控制帧用于执行一些协议内部功能逻辑，又分为3种：Close、Ping和Pong，Close即请求关闭连接，Ping-Pong看起来天生一对，常被用于心跳检测；数据帧携带了应用程序数据，主要分为2大类：Text和Binary，顾名思义，前者携带文本消息，后者携带二进制消息，另外注意数据帧可以是完整的(Whole)，也可以是部分的(Partial)。</p>
+<p>Java EE 7开始提供的WebSocket相关的API，可以参考<a href="http://www.oracle.com/technetwork/cn/articles/java/jsr356-1937161-zhs.html" target="_blank" rel="external">JSR 356</a>。</p>
+<h4 id="实现Echo服务端"><a href="#实现Echo服务端" class="headerlink" title="实现Echo服务端"></a>实现Echo服务端</h4><p>要实现WebSocket服务端(以一个简单的Echo服务为例)，有两种方式，一种是注解式，另一种是编程式(似曾相识啊……)。</p>
+<p>注解式类似这样<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">@ServerEndpoint(&quot;/annotation/echo&quot;)</div><div class="line">public class AnnotationEchoServer &#123;</div><div class="line">	@OnMessage</div><div class="line">	public String echo(String message) &#123;</div><div class="line">		return message;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里用到2个注解，@ServerEndpoint注解在类上，它告诉Web容器，这个类是一个服务器“端点”(即WebSocket通信的一端)，连接它的URI是“/echo”；而@OnMessage注解在方法上，表明这个方法将处理OnMessage这个WebSocket事件(具体的在下文“生命周期”中展开)，即这个方法将处理这个端点的入站消息，处理的方法是将收到的消息原封不动的再发送回去(即Echo)，</p>
+<p>而编程式写法则是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">public class ProgrammaticEchoServerConfig implements ServerApplicationConfig &#123;</div><div class="line">	@Override</div><div class="line">	public Set&lt;Class&lt;?&gt;&gt; getAnnotatedEndpointClasses(Set&lt;Class&lt;?&gt;&gt; arg0) &#123;</div><div class="line">		return arg0;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	@Override</div><div class="line">	public Set&lt;ServerEndpointConfig&gt; getEndpointConfigs(Set&lt;Class&lt;? extends Endpoint&gt;&gt; arg0) &#123;</div><div class="line">		Set&lt;ServerEndpointConfig&gt; configs = new HashSet&lt;&gt;();</div><div class="line">		ServerEndpointConfig config = ServerEndpointConfig.Builder</div><div class="line">				.create(ProgrammaticEchoServer.class, &quot;/programmatic/echo&quot;).build();</div><div class="line">		configs.add(config);</div><div class="line">		return configs;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">public class ProgrammaticEchoServer extends Endpoint &#123;</div><div class="line">	private Session session;</div><div class="line"></div><div class="line">	@Override</div><div class="line">	public void onOpen(Session session, EndpointConfig endpointConfig) &#123;</div><div class="line">		this.session = session;</div><div class="line">		session.addMessageHandler(String.class, message -&gt; &#123;</div><div class="line">			try &#123;</div><div class="line">				this.session.getBasicRemote().sendText(message);</div><div class="line">			&#125; catch (IOException e) &#123;</div><div class="line">				e.printStackTrace();</div><div class="line">			&#125;</div><div class="line">		&#125;);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>代码要长了不少……这里涉及2个类，配置类ProgrammaticEchoServerConfig实现了ServerApplicationConfig接口，接口中的2个方法分别是Web容器启动时扫描到的注解式端点和编程式端点的类的实例，这里我们只关心编程式端点，并为其指定了URI——“/programmatic/echo”；</p>
+<p>另一个类是端点的实现类ProgrammaticEchoServer，它继承自Endpoint，有一个抽象方法onOpen用于处理客户端连接事件，我们需要在每一个连接上的Session添加MessageHandler(即说明如何处理收到的各类消息)，这里处理的方式和注解式端点中的处理是一样的。要通过已知的Session向会话的另一方发送消息，需要RemoteEndpoint对象，这个对象又分为两种，Basic和Async——一个是同步的，一个是异步的。</p>
+<h4 id="实现Echo客户端"><a href="#实现Echo客户端" class="headerlink" title="实现Echo客户端"></a>实现Echo客户端</h4><p>仅有服务端当然是不能建立通讯的，我们还要看看客户端怎么做，功能上嘛：实现当连接建立的时候向服务端发送本机系统时间，并接收服务端的Echo，代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line">import java.io.IOException;</div><div class="line">import java.net.URI;</div><div class="line">import java.net.URISyntaxException;</div><div class="line">import java.time.LocalDateTime;</div><div class="line">import java.time.format.DateTimeFormatter;</div><div class="line">import java.time.format.FormatStyle;</div><div class="line"></div><div class="line">import javax.websocket.ClientEndpoint;</div><div class="line">import javax.websocket.CloseReason;</div><div class="line">import javax.websocket.ContainerProvider;</div><div class="line">import javax.websocket.DeploymentException;</div><div class="line">import javax.websocket.OnMessage;</div><div class="line">import javax.websocket.OnOpen;</div><div class="line">import javax.websocket.SendHandler;</div><div class="line">import javax.websocket.SendResult;</div><div class="line">import javax.websocket.Session;</div><div class="line">import javax.websocket.WebSocketContainer;</div><div class="line"></div><div class="line">@ClientEndpoint</div><div class="line">public class EchoClient &#123;</div><div class="line">	private Session session;</div><div class="line"></div><div class="line">	@OnOpen</div><div class="line">	public void onOpen(Session session) &#123;</div><div class="line">		this.session = session;</div><div class="line">		System.out.println(&quot;Server Connect: &quot; + session.getId());</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	@OnMessage</div><div class="line">	public void onMessage(String message) &#123;</div><div class="line">		System.out.println(&quot;Client receive: &quot; + message);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	public void connectServer() throws DeploymentException, IOException, URISyntaxException &#123;</div><div class="line">		WebSocketContainer container = ContainerProvider.getWebSocketContainer();</div><div class="line">		container.connectToServer(this, new URI(&quot;ws://localhost:8080/websocket-server/programmatic/echo&quot;));</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	public void sendMessage() &#123;</div><div class="line">		String message = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(LocalDateTime.now());</div><div class="line">		this.session.getAsyncRemote().sendText(message, new SendHandler() &#123;</div><div class="line">			public void onResult(SendResult result) &#123;</div><div class="line">				if (result.isOK()) &#123;</div><div class="line">					System.out.println(&quot;Client send: &quot; + message);</div><div class="line">				&#125; else &#123;</div><div class="line">					System.out.println(&quot;Client Error: &quot; + result.getException().getMessage());</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	public static void main(String[] args) throws Exception &#123;</div><div class="line">		EchoClient echoClient = new EchoClient();</div><div class="line">		echoClient.connectServer();</div><div class="line">		echoClient.sendMessage();</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>特别注意，JSR 356提供的只是WebSocket的接口，并没有具体的实现，因此如果遇到这样的错误并不奇怪</p>
+<blockquote>
+<p>Exception in thread “main” java.lang.RuntimeException: Could not find an implementation class.<br>    at javax.websocket.ContainerProvider.getWebSocketContainer(ContainerProvider.java:73)</p>
+</blockquote>
+<p>解决的方法是引入包含JSR 356实现的jar包，Jetty、Glassfish等Web容器均提供了类似实现。</p>
+<h4 id="WebSocket连接的建立过程"><a href="#WebSocket连接的建立过程" class="headerlink" title="WebSocket连接的建立过程"></a>WebSocket连接的建立过程</h4><p>WebSocket连接的建立过程仍然是基于一次特殊的HTTP请求/响应，这个过程称为“握手”，我们可以通过Charles或其他同类抓包工具简单看一下这个过程。客户端的请求(部分)和服务端的响应(部分)分别如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">GET /websocket-server/annotation/echo HTTP/1.1</div><div class="line">Sec-WebSocket-Version: 13</div><div class="line">Sec-WebSocket-Extensions: permessage-deflate</div><div class="line">Sec-WebSocket-Key: S16Xokvx3+n8xHbqfV5FOA==</div><div class="line">Upgrade: websocket</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">HTTP/1.1 101 </div><div class="line">Upgrade: websocket</div><div class="line">Connection: upgrade</div><div class="line">Sec-WebSocket-Accept: Q5dJ+WYxjdu4hkPWZasBIXhwxh4=</div><div class="line">Sec-WebSocket-Extensions: permessage-deflate</div></pre></td></tr></table></figure>
+<p>可以看到客户端仍然是发起了一个HTTP请求，只不过在Header中要求升级(Upgrade)到WebSocket协议，这个请求头在HTTP升级HTTPS时也会见到；服务端则给出了101状态码，该状态码表示协议切换成功；至于其他Header，表示的是这次连接关于安全性、子协议、扩展的方面的参数。</p>
+<h4 id="WebSocket生命周期"><a href="#WebSocket生命周期" class="headerlink" title="WebSocket生命周期"></a>WebSocket生命周期</h4><p>与其说WebSocket的生命周期，不如认为是WebSocket连接存续期间可能发生的事件，分为打开、消息、错误、关闭4种。</p>
+<p>“打开”永远是第一个生命周期事件，它用于指示到另一端的连接已经建立；打开事件之后，参与通信的双方就可以互相发送消息了，双方的每一次对话都会触发“消息”事件；对话过程中可能发生各种错误，此时将触发“错误”事件，错误可能是致命的(导致连接关闭)，也可能只是导致这次会话不能被正确处理；最后，当一端决定结束会话，将产生“关闭”事件。</p>
+<p>这些事件可以一对一地映射到Java API中，对应注解式写法是以下4个注解<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">@ServerEndpoint(&quot;/annotation/echo&quot;)</div><div class="line">public class AnnotationEchoServer &#123;</div><div class="line">	@OnOpen</div><div class="line">	public void onOpen(Session session, EndpointConfig config) &#123;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	@OnMessage</div><div class="line">	public void onMessage(Session session, String message) &#123;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	@OnError</div><div class="line">	public void onError(Session session, Throwable throwable) &#123;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	@OnClose</div><div class="line">	public void onClose(Session session, CloseReason reason) &#123;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>而编程式写法则是这么3个方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">public abstract class Endpoint &#123;</div><div class="line">    public abstract void onOpen(Session session, EndpointConfig config)；</div><div class="line">    </div><div class="line">    public void onClose(Session session, CloseReason closeReason) &#123;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    public void onError(Session session, Throwable thr) &#123;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>其中的@OnOpen注解和onOpen方法等，在前边已经有出现过。另外注意注解式写法中，4个方法的参数类型、顺序等都不是唯一的，具体用法可以参考<a href="https://docs.oracle.com/javaee/7/api/javax/websocket/package-summary.html" target="_blank" rel="external">API文档</a>。</p>
+<p>此外，WebSocket编程模型与HTTP(Servlet)还有一点重大差异，那就是WebSocket实现内部提供了“同一个连接不会在同一时间被多个事件线程调用”的保证，这是不是就意味着我们在开发的时候不需要考虑这方面的并发了？</p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[java.util.Properties踩坑记]]></title>
       <url>http://www.lx1992.com.cn/2017/05/13/stepped-pit-into-java-util-properties/</url>
       <content type="html"><![CDATA[<p>刚刚掉进java.util.Properties的坑里了……其实也好久没记博客了。java.util.Properties这个类继承至java.util.Hashtable&lt;Object, Object&gt;，常用来表示一些属性。<br><a id="more"></a></p>
@@ -11,87 +70,6 @@
 <p>StackTrace显示出问题的地方是这个三方库从Properties中取出配置参数的几行代码，但是DEBUG看，Properties中各个属性都准确无误，进一步单步，发现了“神奇”的问题——一个明明存在的属性在<code>java.util.Properties#getProperty(java.lang.String)</code>时居然是null？！</p>
 <p>问题就出在这个getProperty方法上，下面是它的源码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">public String getProperty(String key) &#123;</div><div class="line">    Object oval = super.get(key);</div><div class="line">    String sval = (oval instanceof String) ? (String)oval : null;</div><div class="line">    return ((sval == null) &amp;&amp; (defaults != null)) ? defaults.getProperty(key) : sval;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>可以看到第3行这里，如果取出的属性值不是String类型，那么就将它置为null。虽然我不太理解为什么这样设计，但至少是吸取了一个教训，往Properties里放属性应当使用<code>java.util.Properties#setProperty(java.lang.String, java.lang.String)</code>方法，虽然它直接调用的还是父类的put方法，也就是让我掉坑里的那家伙，但人家通过形参限制了key、value都只能是String。</p>
-]]></content>
-    </entry>
-    
-    <entry>
-      <title><![CDATA[2018校招之蚂蚁金服初面]]></title>
-      <url>http://www.lx1992.com.cn/2017/03/07/2018-campus-recruiting-antgroup-first-interview/</url>
-      <content type="html"><![CDATA[<p>第一场，AntGroup。话说阿里的效率还是杠杠的，不知道未来其他公司会怎样。</p>
-<p>上周六一位94级的学长到我校来了场直接的内推，而我却是提前一天才接到的通知，再加上之前大部分的经历都放在老板的项目上，甚至都没怎么打算这学期再出去实习（新美大的半年多时光看上去还能撑一撑[坏笑]）。</p>
-<a id="more"></a>
-<p>但既然有这机会为何不试试呢？于是乎连夜修改了简历，次日给学长发了过去。隔了一个周末，周一中午接到电话，电话那头表明简历已收到，2、3个小时后便收到了内推邮件，初略看了下要填写意向岗位和工作地点。</p>
-<blockquote>
-<p>学长说，阿里，和蚂蚁金服HR系统打通，机会总共就一次，挂了就……除非“特殊情况”</p>
-</blockquote>
-<p>所以一开始还是挺纠结的，把唯一的机会这么仓促地用掉吗？毕竟基本上没有做任何准备。但对照了下周围同学的行动，还是决定拼一把——确认了内推邮件，再到校招官网上完善简历、素质测评啥的，也是大多数公司都要走的流程，这时候大概是周二的17时。</p>
-<p>有点出乎意料地，仅仅1小时之后，18时整我就接到了一面电话，那时我还在从食堂回图书馆路上，匆匆找了个安静的地方，开始了35分钟20秒的第一次电面。</p>
-<h4 id="Part0"><a href="#Part0" class="headerlink" title="Part0"></a>Part0</h4><p>确认了接受面试，面试官首先介绍他们自己的情况——蚂蚁金服财富技术部，招聘2018年毕业的学生来实习，暂时只有Java开发岗，工作地点杭州/上海。</p>
-<h4 id="Part1"><a href="#Part1" class="headerlink" title="Part1"></a>Part1</h4><p>接下来一大半时间都由我自述过去的经历。</p>
-<p>很显然，目前对我影响最大的Java项目是在新美大实习期间参与开发的《叮当管家》后端。简单聊了下实习的收获，个人觉得对于这样规模的项目，对儿而言，初期，业务将会取代技术称为比较大的绊脚石，也确实回想起当初的“订单时间优化”这么个需求，单是弄懂新的逻辑和旧的逻辑就花了好些时间。</p>
-<blockquote>
-<p>既然弄懂业务逻辑要花不少时间，你是怎么提高效率的？和PM沟通多吗？</p>
-</blockquote>
-<p>更多的还是请教身边的同事吧，当然跟PM交流的不会少，不先弄懂需求怎么行呢？不过面试官对那个项目两个PM一个负责Web端一个负责App端很不理解，认为一个负责FE一个负责BE会更合理。<strong>另外好奇一下，一般RD和运营交互多吗？我对运营没什么印象呢？</strong></p>
-<p>其次是开发流程啥的，毕竟在学校的项目，不要说什么规范的流程了，多少项目开发完就不了了之，但公司的项目就不一样了，从PM出需求到最终上线有严格的规范</p>
-<blockquote>
-<p>你接到一个需求以后，你需要做什么？详述一下，到QA提测前你的工作？</p>
-</blockquote>
-<p>接到需求后，首先我会分解这个需求，这个过程就需要和PM多沟通，分解之后得出这个需求对项目有怎样的影响，将从哪几个点切入，开发估时多久；而后会和FE同学定接口，毕竟前后端完全分离了嘛，然后就可以写设计文档了——这就是第一阶段的输出了。</p>
-<blockquote>
-<p>设计文档包括哪些内容？</p>
-</blockquote>
-<p>一是涉及的功能点改动(及其流程)，二是库表结构(如果涉及的话)，三是接口定义。对其中的业务流程，可能跟项目的规模和需求有关系的，很多情况下我甚至用文字就能描述清楚，少数情况下会画画流程图，至于时序图那是用的少之又少了。<strong>项目中较少出现跨系统的调用，一个逻辑总能够“很轻松”的描述清楚，这一点面试也比较奇怪</strong>。</p>
-<blockquote>
-<p>如果有BUG在提测时没发现，上线后报错了，这种情况遇到过吗，怎么发现和处理的？</p>
-</blockquote>
-<p>一开始我的回答是看日志，因为确实上线后的一段时间我们RD基本都会紧盯着日志(大屏除了码代码这可能是第二个用处……)，但着实又让面试官吃了一惊，毕竟这项目的规模还是有一定差距的嘛。一段时间以后基本上就依靠监控系统了，实话说，每次收到报警短信都神经过敏，尤其是线上来个NPE啥的……</p>
-<blockquote>
-<p>监控系统只能监测抛出异常的情况，万一程序运行正确但结果不对，制造了线上脏数据呢？</p>
-</blockquote>
-<p>这个问题处理起来我就没什么经验，实话实说了。有点印象的几个思路：1、需求上线后QA会在线上回归一圈；2、每日报表要是有什么异常数据PM肯定大发雷霆；3、被客诉了[哭晕]……万一碰上这样的问题，修线上数据那也是够够的。最后还是面试官给了一点提示：没有系统间的数据核对机制吗？</p>
-<p>还有就是基础组件跟服务化思想，过去总是不是网上找点开源组件，就是自己重复造轮子，到了公司才意识到人家有那么多基础组件和设施等着我们去用。至于服务化，就是在实习尾声的时候多少参与了一点这个项目的重构，对微服务可能有了那么一丢丢认识。</p>
-<p>Part1，面试官对我的评价是对整个项目流程还是基本清楚的，最需要关注的点是正确理解需求，在这一方面还是做的挺不错的。</p>
-<h4 id="Part2"><a href="#Part2" class="headerlink" title="Part2"></a>Part2</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">// 有同学看了以后告诉我，不毕整理得这么详细，所以从这里开始我简单过下知识点？</div></pre></td></tr></table></figure>
-<p>Part2，是一些关于Java基础的问答，感觉没有想象中的难，但多少还是要提前准备准备的。</p>
-<blockquote>
-<p>如何使用List、Set等容器对数据进行排序</p>
-</blockquote>
-<p>考察Collections.sort()方法和Comparable.compareTo()方法，前者理论上答List.sort()更准确。</p>
-<blockquote>
-<p>Set是否允许重复元素？如何判断重复元素？</p>
-</blockquote>
-<p>考察hashCode()方法和equals()方法，equals的对象必然hashCode一致，反之则不然。</p>
-<blockquote>
-<p>描述线程池构造方法的参数</p>
-</blockquote>
-<p>平时比较多的直接用Executors.newFixed|CacheedTheadPool/SingleThreadExecutor()方法，会误以为只有1个(固定线程个数)甚至没有参数。但其实他们的实现都是实例化了ThreadPoolExecutor，这个类的构造方法总共有7个参数(最小/最大线程数、空闲线程保活时间/时间单位、阻塞任务队列、线程创建工厂、任务失败Handler)。</p>
-<blockquote>
-<p>对比MyBatis和Hibernate(我更熟悉Mybatis，问：说说MyBatis的优势)</p>
-</blockquote>
-<p>简单轻量……</p>
-<blockquote>
-<p>简单介绍IoC和AOP，以及Ioc的init-method和destory-method的配置</p>
-</blockquote>
-<p>IOC是控制反转(通过DI(依赖注入)来降低代码耦合度)，AOP是面向切面编程，另外这里被问到是否看过Spring源代码……想起了实习时每周三的读书会[哭哭]</p>
-<blockquote>
-<p>乐观锁和悲观锁的概念和Java(或SQL)实现</p>
-</blockquote>
-<p>前者假定冲突不会发生，后者假定冲突会发生，也即假定发生冲突的概率不同。实现上(SQL)乐观锁一般用版本号或时间戳，(Java)悲观锁最简单的就是synchronized关键字……</p>
-<blockquote>
-<p>分布式锁(结合实际应用情况)</p>
-</blockquote>
-<p>应该是我对乐观锁/悲观锁答得不是太好……这里又问了一次关于并发和锁的问题。分布式锁实习时有做过用Redis锁ID，在一定程度解决编辑订单等场景下重复提交的问题，另外这里多少涉及了一点Redis的相关知识</p>
-<blockquote>
-<p>GC的简单概念</p>
-</blockquote>
-<p>这个最不熟了，依稀记得引用计数这么个概念，实际上Java堆内存分为年轻代、年老代和永久代，在client和server模式又分别对应几种不同的GC策略<br>// TODO 回过头来继续补充？</p>
-<h4 id="Part3"><a href="#Part3" class="headerlink" title="Part3"></a>Part3</h4><p>Part3给我自己一个机会展现刚才面试官没有提及，但自己擅长的技术，这里我提了两点</p>
-<p>一是试着在学校的项目中引入一些互联网基础设施(深受实习的毒啊……)，当然现阶段还只能找一些开源实现</p>
-<p>二是实习时多少了解了下，当一个项目量级慢慢上去以后至少要注意哪些点，以数据库为例，很可能我们就会在原本主从库的基础上再做分库，那这时候神马触发器存储过程自定义函数，甚至外键自增长ID就统统呵呵了，也刚好最近参考Snowflake实现了一个ID生成器</p>
-<p>最后3分钟，问了我平时看什么书没有，很巧的前几天想把自己的服务器Docker化，匆匆过了本关于Docker的书，不过非技术方面的平时真的就看的不多。</p>
-<p>好，目前这就是全部了。虽然我知道以我自己的能力，希望有多大，但毕竟这是第一次正式找工作(之前新美大因为毕业时间的关系不满足留用条件，当时的两轮现场面最后也只整理出了几个点[可惜])，所以记下来也权当个纪念，也许，后面的面试就不会再记得这么详细了。</p>
-<p>噢，写完这篇这会我都还没笔试呢……(这流程是不是有点怪怪的)，笔试的情况也会更新在这里~当然前提是我做出来了[坏笑]。还有前面面试的几个问题我目前整理的答案并不完整，甚至可能是错的，欢迎一起完善哈~</p>
 ]]></content>
     </entry>
     
@@ -463,7 +441,7 @@
       <url>http://www.lx1992.com.cn/2017/01/10/send-mail-using-external-smtp-by-postfix/</url>
       <content type="html"><![CDATA[<p>项目中许多地方都需要邮件通知功能。以开发工具为例，譬如，Gogs在版本库变化时可以通知团队成员、Redmine在项目（任务）进度变化时也有类似的功能，更进一步地，程序上线后将会配置相应的JVM监控，以便于发生线上故障时（程序抛出非预期的异常等）及时通知开发者处理。</p>
 <a id="more"></a>
-<p>但是，有几个问题需要留意。首先是如何发送邮件？自己搭建一套完整的邮件服务？真的这样做的话，可以以类似<a href="&#x6d;&#x61;&#105;&#x6c;&#116;&#x6f;&#x3a;&#109;&#x61;&#105;&#x6c;&#x40;&#x6d;&#121;&#x64;&#x6f;&#x6d;&#x61;&#105;&#x6e;&#46;&#x63;&#x6f;&#x6d;">&#109;&#x61;&#105;&#x6c;&#x40;&#x6d;&#121;&#x64;&#x6f;&#x6d;&#x61;&#105;&#x6e;&#46;&#x63;&#x6f;&#x6d;</a>的名义发送邮件，看上去是逼格满满，可就算不考虑这个操作的复杂性，在这个垃圾邮件泛滥的时代，十有八九这种自己发送的邮件会面临各种限制。再者，更现实一点，这些程序都运行在内网主机上，如何向外部发送邮件呢？</p>
+<p>但是，有几个问题需要留意。首先是如何发送邮件？自己搭建一套完整的邮件服务？真的这样做的话，可以以类似<a href="&#109;&#x61;&#x69;&#108;&#x74;&#x6f;&#58;&#109;&#x61;&#105;&#108;&#x40;&#109;&#121;&#x64;&#x6f;&#109;&#97;&#105;&#110;&#46;&#x63;&#x6f;&#109;">&#109;&#x61;&#105;&#108;&#x40;&#109;&#121;&#x64;&#x6f;&#109;&#97;&#105;&#110;&#46;&#x63;&#x6f;&#109;</a>的名义发送邮件，看上去是逼格满满，可就算不考虑这个操作的复杂性，在这个垃圾邮件泛滥的时代，十有八九这种自己发送的邮件会面临各种限制。再者，更现实一点，这些程序都运行在内网主机上，如何向外部发送邮件呢？</p>
 <p>其实，使用邮件中继转发（relay）服务就可以完全解决上面这些所谓的“问题”。邮件中继转发，简单地说，就是邮件的最终递送仍旧由外部SMTP服务完成，163、QQ、Gmail什么的都可以，他们不是更专业吗？而我们的邮件服务器只是扮演一个代理的作用而已。</p>
 <p>肩负邮件中继转发这一使命的，也就是本文的主角——Postfix。想要详细学习了解的同学可以戳<a href="https://en.wikipedia.org/wiki/postfix_(software" target="_blank" rel="external">这里</a>)。在本例中，我们的程序将要发送的邮件交给Postfix，然后就没有然后了，完全不知道，也不需要知道邮件最后怎么样了。而收到邮件的Postfix，就像我们在邮件客户端（Foxmail、Thunderbird等）里点击“发送”按钮一般，将邮件交由配置好的外部SMTP服务。</p>
 <p>下面直接介绍开始配置的过程。</p>
