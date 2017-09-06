@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="Java NIO学习笔记-3"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/09/05/java-nio-3/"/>
+
+
+<meta name="description" content="这是NIO学习笔记的第3篇，也是最后一篇了，还剩下最后一个核心类——Selector，此外会补充一些前面略过的点。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java NIO学习笔记-3">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/09/05/java-nio-3/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="这是NIO学习笔记的第3篇，也是最后一篇了，还剩下最后一个核心类——Selector，此外会补充一些前面略过的点。">
+<meta property="og:updated_time" content="2017-09-06T09:02:27.633Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java NIO学习笔记-3">
+<meta name="twitter:description" content="这是NIO学习笔记的第3篇，也是最后一篇了，还剩下最后一个核心类——Selector，此外会补充一些前面略过的点。">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> Java NIO学习笔记-3 · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Java NIO学习笔记-3
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年9月5日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+      <div class="post-toc" id="post-toc">
+        <h2 class="post-toc-title">文章目录</h2>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#Selector"><span class="toc-text">Selector</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Paths和Files"><span class="toc-text">Paths和Files</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#AsynchronousFileChannel"><span class="toc-text">AsynchronousFileChannel</span></a></li></ol>
+        </div>
+      </div>
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>这是NIO学习笔记的第3篇，也是最后一篇了，还剩下最后一个核心类——Selector，此外会补充一些前面略过的点。</p>
+<a id="more"></a>
+<h4 id="Selector"><a href="#Selector" class="headerlink" title="Selector"></a>Selector</h4><p>在使用BIO时，为了避免阻塞，我们可能会给每个I/O流开辟一个线程(高端一点，整个线程池啥的)，但大量的线程仍可能占用掉过多的资源。启用NIO中Channel的非阻塞特性吧，上一篇末尾通过死循环来判断结果的逻辑是我不能接受的，甚至也达不到提升性能的目的，这时就需要Selector登场了。</p>
+<p>Selector的作用是检查指定的Channel是否有某些的事件发生，比如有数据可以读/写了。如果有，我们才去调用相应的非阻塞方法，通过这种操作规避了在死循环中无意义地调用。</p>
+<p>在使用Selector之前，我们需要打开它，并将关注的Channel事件注册给它</p>
+<ul>
+<li>java.nio.channels.Selector#open</li>
+<li>java.nio.channels.SelectableChannel#register(java.nio.channels.Selector, int)</li>
+</ul>
+<blockquote>
+<p>注意：注册给Selector的Channel必须是非阻塞的，否则会抛出java.nio.channels.IllegalBlockingModeException异常</p>
+</blockquote>
+<p>register方法的第二个int型参数实际上是java.nio.channels.SelectionKey中的常量，共有4个，表明Selector感兴趣的事件(读/写/建立连接/接受连接)</p>
+<ul>
+<li>java.nio.channels.SelectionKey#OP_READ</li>
+<li>java.nio.channels.SelectionKey#OP_WRITE</li>
+<li>java.nio.channels.SelectionKey#OP_CONNECT</li>
+<li>java.nio.channels.SelectionKey#OP_ACCEPT</li>
+</ul>
+<blockquote>
+<p>注意：一个Selector中可以注册多个Channel，但一个Channel只能在一个Selector里注册一次，第二次及以后的注册只相当于更新SelectionKey</p>
+</blockquote>
+<p>接着就可以从Selector中选取就绪的Channel了，对应的方法是</p>
+<ul>
+<li>java.nio.channels.Selector#select()</li>
+<li>java.nio.channels.Selector#selectNow</li>
+</ul>
+<p>两者的区别是前者会阻塞直到至少有一个Channel可以被选中(不一定就绪哦~所以它很有可能返回“0个Channel已就绪”)，而后者是非阻塞的，会立即返回当前就绪的Channel个数，此外select还有一个支持超时的重载版本。</p>
+<p>当有Channel就绪以后，通过迭代器迭代下面方法返回的集合，就可以知道当前哪些Channel就绪了</p>
+<ul>
+<li>java.nio.channels.Selector#selectedKeys</li>
+</ul>
+<blockquote>
+<p>注意：处理过的Channel不会自动从集合中移除，需要手动remove或clear</p>
+</blockquote>
+<p>再对这些就绪的Channel，用下面的方法判断是否有感兴趣的事件发生</p>
+<ul>
+<li>java.nio.channels.SelectionKey#isReadable</li>
+<li>java.nio.channels.SelectionKey#isWritable</li>
+<li>java.nio.channels.SelectionKey#isConnectable</li>
+<li>java.nio.channels.SelectionKey#isAcceptable</li>
+</ul>
+<p>如果有，取出并强制造型相应的Channel作进一步处理</p>
+<ul>
+<li>java.nio.channels.SelectionKey#channel</li>
+</ul>
+<p>最后附上一个功能非常简单的非阻塞服务器程序，它使用TCP监听本机8888端口，接受任何传入的连接，不论这个连接向服务器发生什么，都回复当前时间。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div></pre></td><td class="code"><pre><div class="line">public class SelectorDemo &#123;</div><div class="line">    public static void main(String[] args) throws IOException &#123;</div><div class="line">        try (Selector selector = Selector.open();</div><div class="line">             ServerSocketChannel channel = ServerSocketChannel.open()) &#123;</div><div class="line">            channel.bind(new InetSocketAddress(8888));</div><div class="line">            //channel必须是非阻塞的</div><div class="line">            channel.configureBlocking(false);</div><div class="line">            //向selector注册关注的事件</div><div class="line">            channel.register(selector, SelectionKey.OP_ACCEPT);</div><div class="line"></div><div class="line">            while (true) &#123;</div><div class="line">                if (selector.select() == 0) &#123;</div><div class="line">                    //没有channel为ready(能被选中)</div><div class="line">                    continue;</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                Iterator&lt;SelectionKey&gt; keys = selector.selectedKeys().iterator();</div><div class="line">                while (keys.hasNext()) &#123;</div><div class="line">                    SelectionKey key = keys.next();</div><div class="line">                    System.out.println(&quot;SELECT: &quot; + key);</div><div class="line"></div><div class="line">                    //处理关注的事件</div><div class="line">                    if (key.isAcceptable()) &#123;</div><div class="line">                        //当前channel已经可以接受连接(那就接受连接呗!)</div><div class="line">                        accept(((ServerSocketChannel) key.channel()).accept(), selector);</div><div class="line">                    &#125;</div><div class="line">                    if (key.isReadable()) &#123;</div><div class="line">                        //当前channel已经可读(读取数据，然后关注写事件)</div><div class="line">                        read((SocketChannel) key.channel());</div><div class="line">                        key.interestOps(SelectionKey.OP_WRITE);</div><div class="line">                    &#125;</div><div class="line">                    if (key.isWritable()) &#123;</div><div class="line">                        //当前channel已经可写(写入数据，然后关注读事件)</div><div class="line">                        write((SocketChannel) key.channel());</div><div class="line">                        key.interestOps(SelectionKey.OP_READ);</div><div class="line">                    &#125;</div><div class="line"></div><div class="line">                    //selectionKey处理完成后要手动从selectedKeys中移除</div><div class="line">                    keys.remove();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    private static void accept(SocketChannel channel, Selector selector) throws IOException &#123;</div><div class="line">        channel.configureBlocking(false);</div><div class="line">        channel.register(selector, SelectionKey.OP_READ);</div><div class="line">        System.out.println(&quot;ACCEPT: &quot; + channel);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    private static void read(SocketChannel channel) throws IOException &#123;</div><div class="line">        ByteBuffer buffer = ByteBuffer.allocate(1024);</div><div class="line"></div><div class="line">        while (channel.read(buffer) &gt; 0) &#123;</div><div class="line">            buffer.flip();</div><div class="line"></div><div class="line">            while (buffer.hasRemaining()) &#123;</div><div class="line">                byte[] bytes = new byte[buffer.remaining()];</div><div class="line">                buffer.get(bytes);</div><div class="line">                System.out.println(&quot;READ: &quot; + new String(bytes, Charset.forName(&quot;utf-8&quot;)));</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    private static void write(SocketChannel channel) throws IOException &#123;</div><div class="line">        ByteBuffer buffer = ByteBuffer.allocate(1024);</div><div class="line"></div><div class="line">        String string = new Date().toString();</div><div class="line">        System.out.println(&quot;WRITE: &quot; + string);</div><div class="line"></div><div class="line">        buffer.put(string.getBytes(Charset.forName(&quot;utf-8&quot;)));</div><div class="line">        buffer.flip();</div><div class="line"></div><div class="line">        while (buffer.hasRemaining()) &#123;</div><div class="line">            channel.write(buffer);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="Paths和Files"><a href="#Paths和Files" class="headerlink" title="Paths和Files"></a>Paths和Files</h4><p>这两位，是Java7以后新增的工具类，分别用于操作路径和文件，提供类似下面的几个方法</p>
+<ul>
+<li>java.nio.file.Paths#get(java.lang.String, java.lang.String…)</li>
+<li>java.nio.file.Files#copy(java.nio.file.Path, java.nio.file.Path, java.nio.file.CopyOption…)</li>
+<li>java.nio.file.Files#move</li>
+<li>java.nio.file.Files#delete</li>
+<li>……</li>
+</ul>
+<h4 id="AsynchronousFileChannel"><a href="#AsynchronousFileChannel" class="headerlink" title="AsynchronousFileChannel"></a>AsynchronousFileChannel</h4><p>之前提过，FileChannel是几个常见Channel中唯一一个不支持设置成非阻塞模式的Channel，但某些情况下我们确实有非阻塞操作文件的需求，这该怎么办呢？固然我们可以自己用多线程封装这么一个工具，很可能也已经有三方库实现了类似功能，但Java7以后对此提供了原生的支持——java.nio.channels.AsynchronousFileChannel。</p>
+<p>首先依然是打开AsynchronousFileChannel</p>
+<ul>
+<li>java.nio.channels.AsynchronousFileChannel#open(java.nio.file.Path, java.nio.file.OpenOption…)</li>
+</ul>
+<p>第2个参数类似于打开RandomAccessFile时的第2个参数，OpenOption的实现类提供了若干个常量表示以读/写等模式打开文件。</p>
+<p>随后就可以进行异步的读/写操作了。无论读还是写，都提供2个重载版本</p>
+<ul>
+<li>java.nio.channels.AsynchronousFileChannel#read(java.nio.ByteBuffer, long)</li>
+<li>java.nio.channels.AsynchronousFileChannel#read(java.nio.ByteBuffer, long, A, java.nio.channels.CompletionHandler<java.lang.integer,? super="" a="">)</java.lang.integer,?></li>
+<li>java.nio.channels.AsynchronousFileChannel#write(java.nio.ByteBuffer, long)</li>
+<li>java.nio.channels.AsynchronousFileChannel#write(java.nio.ByteBuffer, long, A, java.nio.channels.CompletionHandler<java.lang.integer,? super="" a="">)</java.lang.integer,?></li>
+</ul>
+<p>其中2个参数的方法，返回java.util.concurrent.Future供后期获取执行结果，而4个参数的版本，第4个参数直接是一个java.nio.channels.CompletionHandler类型的、当对文件异步读/写完成的回调。</p>
+<p>以读为例，测试代码如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">private static void readFuture() throws IOException, ExecutionException, InterruptedException &#123;</div><div class="line">    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(Paths.get(&quot;nio-async-file.txt&quot;), StandardOpenOption.READ)) &#123;</div><div class="line">        ByteBuffer buffer = ByteBuffer.allocate(1024);</div><div class="line">        Future&lt;Integer&gt; future = channel.read(buffer, 0);</div><div class="line">        int length = future.get();</div><div class="line">		//处理读取结果</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">private static void readCallback() throws IOException &#123;</div><div class="line">    AsynchronousFileChannel channel = AsynchronousFileChannel.open(Paths.get(&quot;nio-async-file.txt&quot;), StandardOpenOption.READ);</div><div class="line">    ByteBuffer buffer = ByteBuffer.allocate(1024);</div><div class="line"></div><div class="line">    channel.read(buffer, 0, null, new CompletionHandler&lt;Integer, ByteBuffer&gt;() &#123;</div><div class="line">        @Override</div><div class="line">        public void completed(Integer result, ByteBuffer attachment) &#123;</div><div class="line">            //读取成功回调</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        @Override</div><div class="line">        public void failed(Throwable exc, ByteBuffer attachment) &#123;</div><div class="line">            //读取失败回调</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>分了三部分记的NIO学习笔记暂告一段，可能涉及的内容基本上只是NIO如何使用，没有过多地深入其细节。</p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2017/09/04/java-nio-2/">
+        <span class="next-text nav-default">Java NIO学习笔记-2</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2017/09/05/java-nio-3/';
+        
+            this.page.identifier = 'bb134880-9233-11e7-9efd-8b2453be771c';
+        
+        this.page.title = 'Java NIO学习笔记-3';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>

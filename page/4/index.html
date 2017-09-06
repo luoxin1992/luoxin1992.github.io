@@ -163,6 +163,134 @@
     <header class="post-header">
       <h1 class="post-title">
         
+          <a class="post-link" href="/2017/01/01/set-global-proxy-in-ubuntu/">Ubuntu设置全局代理</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年1月1日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+    -->
+
+    <div class="post-content">
+      
+        
+          
+        <!-- TODO 当文章没有描述或摘要时自动取第一段或前150字 测试用substring/split等函数会使渲染异常 -->
+        
+
+        
+          <p>之前有一篇文章用iptables做端口映射，实现了从外网直接ssh连接一台内网云主机，但即便这样，还是存在一些问题，譬如，apt仍旧无法访问外部源。</p>
+<p>至于原因哈，猜一个，因为前面配置端口转发的时候只映射了22端口，而更新软件源等，使用的是http的80端口，些许应该再配置下http的80端口、https的433端口……</p>
+<p>一不做二不休，直接在外网主机上用squid架设代理服务器，不就免去这一切乱七八糟的事了吗？架设代理服务器的过程后面会补上（又给自己挖坑呢）<!--可以看[我的另一篇博客]()，当然是参考了[这篇文章]()-->。</p>
+          <div class="read-more">
+            <a href="/2017/01/01/set-global-proxy-in-ubuntu/" class="read-more-link">阅读全文</a>
+          </div>
+        
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+  </article>
+
+    
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          <a class="post-link" href="/2017/01/01/install-mysql-server/">搭建MySQL服务器</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年1月1日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+    -->
+
+    <div class="post-content">
+      
+        
+          
+        <!-- TODO 当文章没有描述或摘要时自动取第一段或前150字 测试用substring/split等函数会使渲染异常 -->
+        
+
+        
+          <p>不论是即将开发的程序，还是开发过程中必不可少的git、wiki等工具，它们都需要用数据库来保存自身的数据，所以搭建服务器的第一步自然是先把mysql搭起来。</p>
+          <div class="read-more">
+            <a href="/2017/01/01/install-mysql-server/" class="read-more-link">阅读全文</a>
+          </div>
+        
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+  </article>
+
+    
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          <a class="post-link" href="/2016/12/30/port-mapping-by-iptables/">用iptables实现端口映射</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2016年12月30日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+    -->
+
+    <div class="post-content">
+      
+        
+          
+        <!-- TODO 当文章没有描述或摘要时自动取第一段或前150字 测试用substring/split等函数会使渲染异常 -->
+        
+
+        
+          <p>按照项目对云主机的规划，只有一台主机具有外网IP（下文称A主机），其他主机都只有内网IP（下文称B主机）。换句话说，只有A主机可以访问外网，B主机不行。虽然这是出于安全性和成本等方面的考虑（数据库、后端接口等不宜暴露），但是这样一来，管理B主机都很成问题了，如何解决呢？</p>
+          <div class="read-more">
+            <a href="/2016/12/30/port-mapping-by-iptables/" class="read-more-link">阅读全文</a>
+          </div>
+        
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+  </article>
+
+    
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
           <a class="post-link" href="/2016/12/25/set-static-ip-in-ubuntu/">Ubuntu设置静态IP地址</a>
         
       </h1>

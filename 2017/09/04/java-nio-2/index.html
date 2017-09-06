@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="Java NIO学习笔记-2"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/09/04/java-nio-2/"/>
+
+
+<meta name="description" content="继续NIO部分的内容。上一篇主要介绍了NIO的基本概念，以及Buffer这一NIO核心类的使用，这第二篇我们来看下一个核心类——Channel的使用。
+相比BIO中的InputStream、OutputStream，Channel有这么几点不同：
+
+BIO中明确了InputStream只能读、OutputStream只能写，而大多数情况下Channel既能读又能写
+java.io.InputStr">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java NIO学习笔记-2">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/09/04/java-nio-2/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="继续NIO部分的内容。上一篇主要介绍了NIO的基本概念，以及Buffer这一NIO核心类的使用，这第二篇我们来看下一个核心类——Channel的使用。
+相比BIO中的InputStream、OutputStream，Channel有这么几点不同：
+
+BIO中明确了InputStream只能读、OutputStream只能写，而大多数情况下Channel既能读又能写
+java.io.InputStr">
+<meta property="og:updated_time" content="2017-09-05T12:12:29.737Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java NIO学习笔记-2">
+<meta name="twitter:description" content="继续NIO部分的内容。上一篇主要介绍了NIO的基本概念，以及Buffer这一NIO核心类的使用，这第二篇我们来看下一个核心类——Channel的使用。
+相比BIO中的InputStream、OutputStream，Channel有这么几点不同：
+
+BIO中明确了InputStream只能读、OutputStream只能写，而大多数情况下Channel既能读又能写
+java.io.InputStr">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> Java NIO学习笔记-2 · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Java NIO学习笔记-2
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年9月4日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+      <div class="post-toc" id="post-toc">
+        <h2 class="post-toc-title">文章目录</h2>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#FileChannel"><span class="toc-text">FileChannel</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ServerSocketChannel和SocketChannel"><span class="toc-text">ServerSocketChannel和SocketChannel</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#DatagramChannel"><span class="toc-text">DatagramChannel</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#关于非阻塞"><span class="toc-text">关于非阻塞</span></a></li></ol>
+        </div>
+      </div>
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>继续NIO部分的内容。上一篇主要介绍了NIO的基本概念，以及Buffer这一NIO核心类的使用，这第二篇我们来看下一个核心类——Channel的使用。</p>
+<p>相比BIO中的InputStream、OutputStream，Channel有这么几点不同：</p>
+<ul>
+<li>BIO中明确了InputStream只能读、OutputStream只能写，而大多数情况下Channel既能读又能写</li>
+<li>java.io.InputStream#read()直接返回从流中读到的数据，java.io.OutputStream#write(int)直接将参数中的值写入流，但Channel的读和写都是基于上一篇的Buffer的，而且可以是异步的</li>
+</ul>
+<a id="more"></a>
+<h4 id="FileChannel"><a href="#FileChannel" class="headerlink" title="FileChannel"></a>FileChannel</h4><p>直接看一个例子：用FileChannel简单的读写一个文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 写</div><div class="line"> */</div><div class="line">private static void write() throws IOException &#123;</div><div class="line">    try (RandomAccessFile file = new RandomAccessFile(&quot;basic-channel-usage.txt&quot;, &quot;rw&quot;); FileChannel channel = file.getChannel()) &#123;</div><div class="line">        ByteBuffer buffer = ByteBuffer.allocate(32);</div><div class="line"></div><div class="line">        String datetime = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(LocalDateTime.now());</div><div class="line">        buffer.put(datetime.getBytes(Charset.forName(&quot;utf-8&quot;)));</div><div class="line"></div><div class="line">        buffer.flip();</div><div class="line">        System.out.println(buffer.remaining() + &quot;字节被写入.&quot;);</div><div class="line"></div><div class="line">        while (buffer.hasRemaining()) &#123;</div><div class="line">            channel.write(buffer);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line"> * 读</div><div class="line"> */</div><div class="line">private static void read() throws IOException &#123;</div><div class="line">    try (RandomAccessFile file = new RandomAccessFile(&quot;basic-channel-usage.txt&quot;, &quot;r&quot;); FileChannel channel = file.getChannel()) &#123;</div><div class="line">        ByteBuffer buffer = ByteBuffer.allocate(32);</div><div class="line"></div><div class="line">        while (channel.read(buffer) != -1) &#123;</div><div class="line">            buffer.flip();</div><div class="line">            System.out.println(buffer.remaining() + &quot;字节被读出.&quot;);</div><div class="line"></div><div class="line">            while (buffer.hasRemaining()) &#123;</div><div class="line">                byte[] data = new byte[buffer.remaining()];</div><div class="line">                buffer.get(data);</div><div class="line">                System.out.println(new String(data, Charset.forName(&quot;utf-8&quot;)));</div><div class="line">            &#125;</div><div class="line">            buffer.clear();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在使用FileChannel之前必须打开它(同理，使用之后必须关闭它)，同操作文件、数据库连接等十分相像。获得java.nio.channels.FileChannel有三种方式</p>
+<ul>
+<li>java.io.FileInputStream#getChannel</li>
+<li>java.io.FileOutputStream#getChannel</li>
+<li>java.io.RandomAccessFile#getChannel</li>
+</ul>
+<blockquote>
+<p>注意：通过FileInputStream和FileOutputStream获得的Channel只能读/写，强行写/读将抛出java.nio.channels.NonWritableChannelException和java.nio.channels.NonReadableChannelException异常。</p>
+</blockquote>
+<p>而后，便可使用</p>
+<ul>
+<li>java.nio.channels.FileChannel#read(java.nio.ByteBuffer)</li>
+<li>java.nio.channels.FileChannel#write(java.nio.ByteBuffer)</li>
+</ul>
+<p>两个方法，结合Buffer对Channel进行读和写，要注意每次操作后Buffer中索引的变化，否则很容易发生不可描述的BUG。</p>
+<p>Channel的另一个特性是Scattering Read/Gathering Write，字面上的意思是分散读和集中写，实际使用上就是将一个Channel中的内容读到多个Buffer，或者将多个Buffer的内容写入一个Channel。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 集中写</div><div class="line"> */</div><div class="line">private static void gatheringWrite() throws IOException &#123;</div><div class="line">    try (FileOutputStream stream = new FileOutputStream(&quot;basic-channel-usage.txt&quot;); FileChannel channel = stream.getChannel()) &#123;</div><div class="line">        ByteBuffer[] buffers = new ByteBuffer[4];</div><div class="line"></div><div class="line">        for (int i = 0; i &lt; buffers.length; i++) &#123;</div><div class="line">            buffers[i] = ByteBuffer.allocate(32);</div><div class="line">            buffers[i].put(UUID.randomUUID().toString().replaceAll(&quot;-&quot;, &quot;&quot;).getBytes());</div><div class="line">            buffers[i].flip();</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        channel.write(buffers);</div><div class="line">        System.out.println(channel.position());</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line"> * 分散读</div><div class="line"> */</div><div class="line">private static void scatteringRead() throws IOException &#123;</div><div class="line">    try (FileInputStream stream = new FileInputStream(&quot;basic-channel-usage.txt&quot;); FileChannel channel = stream.getChannel()) &#123;</div><div class="line">        ByteBuffer[] buffers = new ByteBuffer[4];</div><div class="line">        for (int i = 0; i &lt; buffers.length; i++) &#123;</div><div class="line">            buffers[i] = ByteBuffer.allocate(32);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        channel.read(buffers);</div><div class="line"></div><div class="line">        for (ByteBuffer buffer : buffers) &#123;</div><div class="line">            buffer.flip();</div><div class="line">            while (buffer.hasRemaining()) &#123;</div><div class="line">                System.out.print((char) buffer.get());</div><div class="line">            &#125;</div><div class="line">            System.out.println();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>变化比较明显的地方其实只有2行：</p>
+<ul>
+<li>java.nio.channels.FileChannel#write(java.nio.ByteBuffer[])</li>
+<li>java.nio.channels.FileChannel#read(java.nio.ByteBuffer[])</li>
+</ul>
+<p>它们的参数由上面的单个Buffer变成了一个Buffer数组。对数组中的每一个Buffer，一个Buffer写满/读空后，才会继续下一个写/读Buffer。</p>
+<p>最后，FileChannel还有一组其他Channel所不具备的方法</p>
+<ul>
+<li>java.nio.channels.FileChannel#transferTo</li>
+<li>java.nio.channels.FileChannel#transferFrom</li>
+</ul>
+<p>这两个方法的存在意味着若一次I/O操作中有一方是文件的时候，可以方便地使用这两个方法把数据从一个Channel传输到另一个Channel。因为还没有了解到其他类型的Channel，先用两个FileChannel做示例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 转移</div><div class="line"> */</div><div class="line">private static void transfer() throws IOException &#123;</div><div class="line">    try (FileChannel channel1 = new RandomAccessFile(&quot;transfer-fr.txt&quot;, &quot;rw&quot;).getChannel();</div><div class="line">         FileChannel channel2 = new RandomAccessFile(&quot;transfer-to.txt&quot;, &quot;rw&quot;).getChannel()) &#123;</div><div class="line">        channel1.transferTo(0, channel1.size(), channel2);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="ServerSocketChannel和SocketChannel"><a href="#ServerSocketChannel和SocketChannel" class="headerlink" title="ServerSocketChannel和SocketChannel"></a>ServerSocketChannel和SocketChannel</h4><p>这两个Channel用于TCP通信，基本的使用方法上与基于BIO的ServerSocket和Socket没有太大的差异。</p>
+<p>对ServerSocketChannel而言，首先要打开(open)它，然后将它绑定(bind)到某个Socket地址上，而后它才能接受(accept)传入的连接。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">ServerSocketChannel serverChannel = ServerSocketChannel.open();</div><div class="line">serverChannel.bind(new InetSocketAddress(&quot;localhost&quot;, 8888));</div><div class="line">SocketChannel clientChannel = serverChannel.accept();</div></pre></td></tr></table></figure></p>
+<p>对与SocketChannel，更是只需要一步：打开(open)连接。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">SocketChannel channel = SocketChannel.open(new InetSocketAddress(&quot;localhost&quot;, 8888))</div></pre></td></tr></table></figure></p>
+<p>无论是服务端还是客户端，取得了SocketChannel的后续操作，同之前的FileChannel就十分相像了，调用下面的2个方法实现读/写。</p>
+<ul>
+<li>java.nio.channels.SocketChannel#read(java.nio.ByteBuffer)</li>
+<li>java.nio.channels.SocketChannel#write(java.nio.ByteBuffer)</li>
+</ul>
+<h4 id="DatagramChannel"><a href="#DatagramChannel" class="headerlink" title="DatagramChannel"></a>DatagramChannel</h4><p>有TCP自然就有UDP，作为一种面向无连接、不可靠的协议，它的读/写是通过发送和接收数据报来实现的。不像TCP有复杂的建立连接的过程，使用DatagramChannel之前只需要指明“我想像哪个Socket地址发送数据报”，或者“我想从哪个Socket地址接收数据报”即可。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 接收</div><div class="line"> */</div><div class="line">private static void receive() throws IOException &#123;</div><div class="line">    try (DatagramChannel channel = DatagramChannel.open()) &#123;</div><div class="line">        ByteBuffer buffer = ByteBuffer.allocate(32);</div><div class="line"></div><div class="line">        channel.socket().bind(new InetSocketAddress(9999));</div><div class="line">        channel.receive(buffer);</div><div class="line">        buffer.flip();</div><div class="line">            </div><div class="line">        while (buffer.hasRemaining()) &#123;</div><div class="line">            System.out.println(buffer.getLong());</div><div class="line">        &#125;</div><div class="line">        buffer.clear();</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line"> * 发送</div><div class="line"> */</div><div class="line">private static void send() throws IOException &#123;</div><div class="line">    try (DatagramChannel channel = DatagramChannel.open()) &#123;</div><div class="line">        ByteBuffer buffer = ByteBuffer.allocate(32);</div><div class="line">        buffer.putLong(System.currentTimeMillis());</div><div class="line">        buffer.flip();</div><div class="line"></div><div class="line">        while (buffer.hasRemaining()) &#123;</div><div class="line">            channel.send(buffer, new InetSocketAddress(9999));</div><div class="line">        &#125;</div><div class="line">        buffer.clear();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>关键的方法就2个</p>
+<ul>
+<li>java.nio.channels.DatagramChannel#send</li>
+<li>java.nio.channels.DatagramChannel#receive</li>
+</ul>
+<p>但是注意到DatagramChannel中其实也是有read和write方法的。</p>
+<ul>
+<li>java.nio.channels.DatagramChannel#read(java.nio.ByteBuffer)</li>
+<li>java.nio.channels.DatagramChannel#write(java.nio.ByteBuffer)</li>
+</ul>
+<p>它们的作用是什么呢？上面的Demo是先将Channel的Socket绑定到某个地址再接收数据，或者在发送时才指定发往哪个Socket地址。DatagramChannel亦可以先“连接”到某个地址。</p>
+<ul>
+<li>java.nio.channels.DatagramChannel#connect</li>
+</ul>
+<p>随后收发数据都只能面向这个地址，但切记UDP是无连接的，这个connect并不会向TCP那样建立真正的连接，最多只是设置一种绑定关系。</p>
+<h4 id="关于非阻塞"><a href="#关于非阻塞" class="headerlink" title="关于非阻塞"></a>关于非阻塞</h4><p>打住！不觉得哪里不对吗？既然是NIO，怎么到目前为止还没有看出哪里体现出非阻塞了……事实上，Channel们既可以仍是阻塞的，也能够通过这个方法并传入参数false，设置成非阻塞的。</p>
+<ul>
+<li>java.nio.channels.spi.AbstractSelectableChannel#configureBlocking</li>
+</ul>
+<blockquote>
+<p>注意：FileChannel并没有继承至java.nio.channels.spi.AbstractSelectableChannel，也就意味着FileChannel暂时没办法设置成非阻塞的。</p>
+</blockquote>
+<p>设置成非阻塞以后，再调用曾经的阻塞方法，比如accept，read，write，都将立即返回。我们应当通过判断返回值，来确定刚刚调用的非阻塞方法究竟结果几何。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">try (ServerSocketChannel serverChannel = ServerSocketChannel.open()) &#123;</div><div class="line">    serverChannel.configureBlocking(false);</div><div class="line">    serverChannel.bind(new InetSocketAddress(&quot;localhost&quot;, 8888));</div><div class="line">    System.out.println(&quot;服务端在&quot; + serverChannel.getLocalAddress() + &quot;上监听……&quot;);</div><div class="line"></div><div class="line">    while (true) &#123;</div><div class="line">        try (SocketChannel clientChannel = serverChannel.accept()) &#123;</div><div class="line">            if (clientChannel == null) &#123;</div><div class="line">                System.out.println(&quot;没有连接&quot;);</div><div class="line">                continue;</div><div class="line">            &#125;</div><div class="line">            //略</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>上面这样的代码看着都汗……实际上，更多的时候，非阻塞要配合还没有提到的最后一个核心类——Selector一起使用，我们第3篇见。</p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2017/09/05/java-nio-3/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">Java NIO学习笔记-3</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2017/09/04/java-nio-1/">
+        <span class="next-text nav-default">Java NIO学习笔记-1</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2017/09/04/java-nio-2/';
+        
+            this.page.identifier = 'a6bf7440-9147-11e7-b4e5-ab50e66a34ad';
+        
+        this.page.title = 'Java NIO学习笔记-2';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>

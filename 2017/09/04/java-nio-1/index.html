@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="Java NIO学习笔记-1"/>
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="LuoXin's World">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.1.x" />
+
+
+
+<link rel="canonical" href="http://www.lx1992.com.cn/2017/09/04/java-nio-1/"/>
+
+
+<meta name="description" content="Java的NIO，即New I/O，也叫Non-Blocking I/O，作为一个Java 1.4就推出的特性，其实老早就听说了。平时项目中用到的各种Web容器啥的，比方说Tomcat、Jetty，内部都用到了NIO，更别提像Netty这种专门的NIO框架了。最近抽了点时间，对它做了一点简单的了解。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java NIO学习笔记-1">
+<meta property="og:url" content="http://www.lx1992.com.cn/2017/09/04/java-nio-1/index.html">
+<meta property="og:site_name" content="LuoXin's World">
+<meta property="og:description" content="Java的NIO，即New I/O，也叫Non-Blocking I/O，作为一个Java 1.4就推出的特性，其实老早就听说了。平时项目中用到的各种Web容器啥的，比方说Tomcat、Jetty，内部都用到了NIO，更别提像Netty这种专门的NIO框架了。最近抽了点时间，对它做了一点简单的了解。">
+<meta property="og:image" content="http://www.lx1992.com.cn/../images/2ba06c5a-dd3d-4b73-8e49-fa33e7a14554.png">
+<meta property="og:updated_time" content="2017-09-04T13:48:24.919Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java NIO学习笔记-1">
+<meta name="twitter:description" content="Java的NIO，即New I/O，也叫Non-Blocking I/O，作为一个Java 1.4就推出的特性，其实老早就听说了。平时项目中用到的各种Web容器啥的，比方说Tomcat、Jetty，内部都用到了NIO，更别提像Netty这种专门的NIO框架了。最近抽了点时间，对它做了一点简单的了解。">
+<meta name="twitter:image" content="http://www.lx1992.com.cn/../images/2ba06c5a-dd3d-4b73-8e49-fa33e7a14554.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.1.x" />
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?88c29b7148244168a472308f632d49cc";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-90807224-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> Java NIO学习笔记-1 · LuoXin's World </title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">LuoXin's World</a>
+</div>
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              归档
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              关于
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/guestbook">
+            
+              <!-- 菜单项名称从语言文件中获取 -->
+              留言
+          </a>
+        </li>
+      
+      
+    </ul>
+  
+</nav>
+
+<div class="mobile-navbar">
+  <div class="mobile-header">
+    <div class="mobile-header-logo">
+      <a href="/." class="logo">LuoXin's World</a>
+    </div>
+
+    <div class="mobile-header-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <nav class="mobile-menu">
+    
+      <a class="mobile-menu-item" href="/archives">
+        
+        
+          Archives
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/about">
+        
+        
+          About
+        
+      </a>
+    
+      <a class="mobile-menu-item" href="/guestbook">
+        
+        
+          Guestbook
+        
+      </a>
+    
+  </nav>
+</div>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Java NIO学习笔记-1
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017年9月4日
+        </span>
+      </div>
+    </header>
+
+    <!-- toc丑爆了 -->
+    <!--
+    
+      <div class="post-toc" id="post-toc">
+        <h2 class="post-toc-title">文章目录</h2>
+        <div class="post-toc-content">
+          <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#概述"><span class="toc-text">概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Buffer"><span class="toc-text">Buffer</span></a></li></ol>
+        </div>
+      </div>
+    
+    -->
+
+    <div class="post-content">
+      
+        <p>Java的NIO，即New I/O，也叫Non-Blocking I/O，作为一个Java 1.4就推出的特性，其实老早就听说了。平时项目中用到的各种Web容器啥的，比方说Tomcat、Jetty，内部都用到了NIO，更别提像Netty这种专门的NIO框架了。最近抽了点时间，对它做了一点简单的了解。</p>
+<a id="more"></a>
+<h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p>首先，NIO包含3个核心的组件，分别是java.nio.<a href="https://docs.oracle.com/javase/8/docs/api/java/nio/Buffer.html" target="_blank" rel="external">Buffer</a>、java.nio.channels.<a href="https://docs.oracle.com/javase/8/docs/api/java/nio/channels/Channel.html" target="_blank" rel="external">Channel</a>和java.nio.channels.<a href="https://docs.oracle.com/javase/8/docs/api/java/nio/channels/Selector.html" target="_blank" rel="external">Selector</a>，即通道、缓冲和选择器。简单地说，数据从通道读入缓冲，或从缓冲写入通道(Channels read data into Buffers, and Buffers write data into Channels)，而选择器用于检测通道的事件。</p>
+<p>相比于面向字节或者字符的BIO，在NIO中，一个线程在(发起)从读数据到缓冲区以后，可以去做其他的事，直到读取完成，再回来继续处理，写也是类似的，因而说NIO是非阻塞的。</p>
+<p>常见的Channel包括</p>
+<ul>
+<li>java.nio.channels.FileChannel</li>
+<li>java.nio.channels.SocketChannel</li>
+<li>java.nio.channels.ServerSocketChannel</li>
+<li>java.nio.channels.DatagramChannel</li>
+</ul>
+<p>从名字上应该不难猜出，它们分别是用于处理文件、TCP和UDP的通道。</p>
+<p>常见的Buffer包括</p>
+<ul>
+<li>java.nio.ByteBuffer</li>
+<li>java.nio.CharBuffer</li>
+<li>java.nio.DoubleBuffer</li>
+<li>java.nio.FloatBuffer</li>
+<li>java.nio.IntBuffer</li>
+<li>java.nio.LongBuffer</li>
+<li>java.nio.ShortBuffer</li>
+</ul>
+<p>这个看起来比通道更清爽，除去Boolean，其余7种基本数据类型分别有各自对应的缓冲啊哈~此外，ByteBuffer有一个子类MappedByteBuffer，根据API说明，它用于内存到文件的直接映射。</p>
+<h4 id="Buffer"><a href="#Buffer" class="headerlink" title="Buffer"></a>Buffer</h4><p>Buffer的本质上就是一块内存区域，示意图如下。图中有3个索引，position、limit和capacity，分别指代下一个<em>要操作</em>的元素的位置、下一个<em>不可操作</em>的元素的位置和Buffer的总长度。此外，我们把limit-position的值记为remaining，意为Buffer中当前剩余元素的个数。</p>
+<p><img src="../images/2ba06c5a-dd3d-4b73-8e49-fa33e7a14554.png" alt=""><br>(图源：《深入分析JavaWeb技术内幕(修订版)》，许令波)</p>
+<p>首先来创建一个Buffer，以ByteBuffer为例，此时position=0，limit=16，capacity=16，表示缓冲区容量16，接下来操作0号位置，最多可以操作到16号位置(不含)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ByteBuffer buffer = ByteBuffer.allocate(16);</div></pre></td></tr></table></figure></p>
+<p>接着往缓冲区里放入三个元素(大写字母A、B、C)，看到position=3，limit和capacity无变化，表明当前缓冲区前3个位置当前已经有数据了。</p>
+<p>此外java.nio.ByteBuffer#put(byte)方法还有几个变体，例如java.nio.ByteBuffer#putInt(int)，用于向缓冲区里放其他类型的数据，但如果往缓冲区里放超过其容量个元素，将抛出java.nio.BufferOverflowException。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">for (int i = &apos;A&apos;; i &lt; &apos;D&apos;; i++) &#123;</div><div class="line">    buffer.put((byte) i);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>既然可以用put来放数据，必然就有get来取数据，方法同样有多个，包括java.nio.ByteBuffer#get()、java.nio.ByteBuffer#getInt()等。</p>
+<p>且慢！get取出数据的同时，position仍然在往前移动啊！前面我们向Buffer添加了3个元素，如果直接get3次，非但取出的是3个0(position为3、4、5的元素)，还把position移到了6号位置。</p>
+<p>所以我们要先调用一下java.nio.Buffer#flip()方法，它的作用是另limit=position，然后使position=0，这样我们既可以重新访问刚才放入Buffer的数据、又不会访问到未使用的位置了(position不能超过limit)，因此有些资料中说这个方法用于“Buffer的读/写”。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">buffer.flip();</div><div class="line">//从缓冲区取数据</div><div class="line">for (int i = 0; i &lt; 3; i++) &#123;</div><div class="line">    System.out.println(buffer.get());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>如果需要重新读已经读过的Buffer，可以使用java.nio.Buffer#rewind()方法，它只将position复位，不改变limit<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">buffer.rewind();</div><div class="line">//又可以愉快地重新读啦</div><div class="line">for (int i = 0; i &lt; 3; i++) &#123;</div><div class="line">    System.out.println(buffer.get());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>读也读够了，接下来呢？重新把Buffer用在别的地方？那就需要先清除里面旧的东西，使用java.nio.Buffer#clear()方法，它令position=0，limit=capacity，也就是Buffer刚创建出来的样子。注意哦，里边的数据并没有真正被清掉，这和我们删除磁盘文件的道理有点像。</p>
+<p>换一种特殊一点的情况，Buffer我们暂时只读了一部分(比方说写入了10字节，先读出5字节)，这时我希望把已经读过的那5个字节的空间让出来。那就需要用java.nio.ByteBuffer#compact()方法“压缩”一下，其原理是1.使用java.lang.System#arraycopy()把Buffer中未读取的数据(position到limit-1部分)复制到Buffer的开头；2.重新设置position=limit-position(即remaining)、limit=capacity。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"> //压缩缓冲区</div><div class="line">buffer.compact();</div><div class="line">//清除缓冲区</div><div class="line">buffer.clear();</div></pre></td></tr></table></figure></p>
+<p>此外补充一个前面略过的索引——mark，它的初始值是-1，可以调用java.nio.Buffer#mark()方法在当前position处“打个标签”，然后在需要的时候调用java.nio.Buffer#reset()，把position设置到mark过的地方。注意，flip、rewind、clear、compact都会导致mark被自动清除。</p>
+<p>这一篇主要就讲讲什么是NIO，以及Buffer相关的东西，其他内容下一篇见~</p>
+
+      
+    </div>
+
+    <!-- 只有post页有post-footer -->
+    
+      <footer class="post-footer">
+      
+      <!-- 正文页底部上一篇/下一篇与有无tag无关 -->
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2017/09/04/java-nio-2/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">Java NIO学习笔记-2</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2017/08/29/campus-recruiting-cstc-citi-1/">
+        <span class="next-text nav-default">2018校招——花旗金融信息(一面)</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:lx1992.xm@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://www.github.com/luoxin1992" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+
+    
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <!-- 修改了页面尾部的版权信息 -->
+  <span class="icp">
+    
+  </span>
+
+  <span class="copyright-year">
+    
+    Copyright &copy;
+    
+      2016 -
+    
+    2017
+
+    <span class="author">LuoXin.</span>
+  </span>
+
+  <span class="power-by">
+    Proudly Power by <a class="hexo-link" href="https://hexo.io">Hexo</a>
+  </span>
+
+  <span class="theme-info">
+     & Theme by <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+
+  <script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://www.lx1992.com.cn/2017/09/04/java-nio-1/';
+        
+            this.page.identifier = 'f753a530-911e-11e7-b0bf-c55e6fd66631';
+        
+        this.page.title = 'Java NIO学习笔记-1';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+    s.src = '//pri1stieb1es.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+  </script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.1.x"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.1.x"></script>
+
+  </body>
+</html>

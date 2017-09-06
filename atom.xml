@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.lx1992.com.cn/"/>
-  <updated>2017-08-29T08:03:04.788Z</updated>
+  <updated>2017-09-06T09:02:27.633Z</updated>
   <id>http://www.lx1992.com.cn/</id>
   
   <author>
@@ -16,11 +16,252 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>Java NIO学习笔记-3</title>
+    <link href="http://www.lx1992.com.cn/2017/09/05/java-nio-3/"/>
+    <id>http://www.lx1992.com.cn/2017/09/05/java-nio-3/</id>
+    <published>2017-09-05T12:14:13.000Z</published>
+    <updated>2017-09-06T09:02:27.633Z</updated>
+    
+    <content type="html"><![CDATA[<p>这是NIO学习笔记的第3篇，也是最后一篇了，还剩下最后一个核心类——Selector，此外会补充一些前面略过的点。</p>
+<a id="more"></a>
+<h4 id="Selector"><a href="#Selector" class="headerlink" title="Selector"></a>Selector</h4><p>在使用BIO时，为了避免阻塞，我们可能会给每个I/O流开辟一个线程(高端一点，整个线程池啥的)，但大量的线程仍可能占用掉过多的资源。启用NIO中Channel的非阻塞特性吧，上一篇末尾通过死循环来判断结果的逻辑是我不能接受的，甚至也达不到提升性能的目的，这时就需要Selector登场了。</p>
+<p>Selector的作用是检查指定的Channel是否有某些的事件发生，比如有数据可以读/写了。如果有，我们才去调用相应的非阻塞方法，通过这种操作规避了在死循环中无意义地调用。</p>
+<p>在使用Selector之前，我们需要打开它，并将关注的Channel事件注册给它</p>
+<ul>
+<li>java.nio.channels.Selector#open</li>
+<li>java.nio.channels.SelectableChannel#register(java.nio.channels.Selector, int)</li>
+</ul>
+<blockquote>
+<p>注意：注册给Selector的Channel必须是非阻塞的，否则会抛出java.nio.channels.IllegalBlockingModeException异常</p>
+</blockquote>
+<p>register方法的第二个int型参数实际上是java.nio.channels.SelectionKey中的常量，共有4个，表明Selector感兴趣的事件(读/写/建立连接/接受连接)</p>
+<ul>
+<li>java.nio.channels.SelectionKey#OP_READ</li>
+<li>java.nio.channels.SelectionKey#OP_WRITE</li>
+<li>java.nio.channels.SelectionKey#OP_CONNECT</li>
+<li>java.nio.channels.SelectionKey#OP_ACCEPT</li>
+</ul>
+<blockquote>
+<p>注意：一个Selector中可以注册多个Channel，但一个Channel只能在一个Selector里注册一次，第二次及以后的注册只相当于更新SelectionKey</p>
+</blockquote>
+<p>接着就可以从Selector中选取就绪的Channel了，对应的方法是</p>
+<ul>
+<li>java.nio.channels.Selector#select()</li>
+<li>java.nio.channels.Selector#selectNow</li>
+</ul>
+<p>两者的区别是前者会阻塞直到至少有一个Channel可以被选中(不一定就绪哦~所以它很有可能返回“0个Channel已就绪”)，而后者是非阻塞的，会立即返回当前就绪的Channel个数，此外select还有一个支持超时的重载版本。</p>
+<p>当有Channel就绪以后，通过迭代器迭代下面方法返回的集合，就可以知道当前哪些Channel就绪了</p>
+<ul>
+<li>java.nio.channels.Selector#selectedKeys</li>
+</ul>
+<blockquote>
+<p>注意：处理过的Channel不会自动从集合中移除，需要手动remove或clear</p>
+</blockquote>
+<p>再对这些就绪的Channel，用下面的方法判断是否有感兴趣的事件发生</p>
+<ul>
+<li>java.nio.channels.SelectionKey#isReadable</li>
+<li>java.nio.channels.SelectionKey#isWritable</li>
+<li>java.nio.channels.SelectionKey#isConnectable</li>
+<li>java.nio.channels.SelectionKey#isAcceptable</li>
+</ul>
+<p>如果有，取出并强制造型相应的Channel作进一步处理</p>
+<ul>
+<li>java.nio.channels.SelectionKey#channel</li>
+</ul>
+<p>最后附上一个功能非常简单的非阻塞服务器程序，它使用TCP监听本机8888端口，接受任何传入的连接，不论这个连接向服务器发生什么，都回复当前时间。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div></pre></td><td class="code"><pre><div class="line">public class SelectorDemo &#123;</div><div class="line">    public static void main(String[] args) throws IOException &#123;</div><div class="line">        try (Selector selector = Selector.open();</div><div class="line">             ServerSocketChannel channel = ServerSocketChannel.open()) &#123;</div><div class="line">            channel.bind(new InetSocketAddress(8888));</div><div class="line">            //channel必须是非阻塞的</div><div class="line">            channel.configureBlocking(false);</div><div class="line">            //向selector注册关注的事件</div><div class="line">            channel.register(selector, SelectionKey.OP_ACCEPT);</div><div class="line"></div><div class="line">            while (true) &#123;</div><div class="line">                if (selector.select() == 0) &#123;</div><div class="line">                    //没有channel为ready(能被选中)</div><div class="line">                    continue;</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                Iterator&lt;SelectionKey&gt; keys = selector.selectedKeys().iterator();</div><div class="line">                while (keys.hasNext()) &#123;</div><div class="line">                    SelectionKey key = keys.next();</div><div class="line">                    System.out.println(&quot;SELECT: &quot; + key);</div><div class="line"></div><div class="line">                    //处理关注的事件</div><div class="line">                    if (key.isAcceptable()) &#123;</div><div class="line">                        //当前channel已经可以接受连接(那就接受连接呗!)</div><div class="line">                        accept(((ServerSocketChannel) key.channel()).accept(), selector);</div><div class="line">                    &#125;</div><div class="line">                    if (key.isReadable()) &#123;</div><div class="line">                        //当前channel已经可读(读取数据，然后关注写事件)</div><div class="line">                        read((SocketChannel) key.channel());</div><div class="line">                        key.interestOps(SelectionKey.OP_WRITE);</div><div class="line">                    &#125;</div><div class="line">                    if (key.isWritable()) &#123;</div><div class="line">                        //当前channel已经可写(写入数据，然后关注读事件)</div><div class="line">                        write((SocketChannel) key.channel());</div><div class="line">                        key.interestOps(SelectionKey.OP_READ);</div><div class="line">                    &#125;</div><div class="line"></div><div class="line">                    //selectionKey处理完成后要手动从selectedKeys中移除</div><div class="line">                    keys.remove();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    private static void accept(SocketChannel channel, Selector selector) throws IOException &#123;</div><div class="line">        channel.configureBlocking(false);</div><div class="line">        channel.register(selector, SelectionKey.OP_READ);</div><div class="line">        System.out.println(&quot;ACCEPT: &quot; + channel);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    private static void read(SocketChannel channel) throws IOException &#123;</div><div class="line">        ByteBuffer buffer = ByteBuffer.allocate(1024);</div><div class="line"></div><div class="line">        while (channel.read(buffer) &gt; 0) &#123;</div><div class="line">            buffer.flip();</div><div class="line"></div><div class="line">            while (buffer.hasRemaining()) &#123;</div><div class="line">                byte[] bytes = new byte[buffer.remaining()];</div><div class="line">                buffer.get(bytes);</div><div class="line">                System.out.println(&quot;READ: &quot; + new String(bytes, Charset.forName(&quot;utf-8&quot;)));</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    private static void write(SocketChannel channel) throws IOException &#123;</div><div class="line">        ByteBuffer buffer = ByteBuffer.allocate(1024);</div><div class="line"></div><div class="line">        String string = new Date().toString();</div><div class="line">        System.out.println(&quot;WRITE: &quot; + string);</div><div class="line"></div><div class="line">        buffer.put(string.getBytes(Charset.forName(&quot;utf-8&quot;)));</div><div class="line">        buffer.flip();</div><div class="line"></div><div class="line">        while (buffer.hasRemaining()) &#123;</div><div class="line">            channel.write(buffer);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="Paths和Files"><a href="#Paths和Files" class="headerlink" title="Paths和Files"></a>Paths和Files</h4><p>这两位，是Java7以后新增的工具类，分别用于操作路径和文件，提供类似下面的几个方法</p>
+<ul>
+<li>java.nio.file.Paths#get(java.lang.String, java.lang.String…)</li>
+<li>java.nio.file.Files#copy(java.nio.file.Path, java.nio.file.Path, java.nio.file.CopyOption…)</li>
+<li>java.nio.file.Files#move</li>
+<li>java.nio.file.Files#delete</li>
+<li>……</li>
+</ul>
+<h4 id="AsynchronousFileChannel"><a href="#AsynchronousFileChannel" class="headerlink" title="AsynchronousFileChannel"></a>AsynchronousFileChannel</h4><p>之前提过，FileChannel是几个常见Channel中唯一一个不支持设置成非阻塞模式的Channel，但某些情况下我们确实有非阻塞操作文件的需求，这该怎么办呢？固然我们可以自己用多线程封装这么一个工具，很可能也已经有三方库实现了类似功能，但Java7以后对此提供了原生的支持——java.nio.channels.AsynchronousFileChannel。</p>
+<p>首先依然是打开AsynchronousFileChannel</p>
+<ul>
+<li>java.nio.channels.AsynchronousFileChannel#open(java.nio.file.Path, java.nio.file.OpenOption…)</li>
+</ul>
+<p>第2个参数类似于打开RandomAccessFile时的第2个参数，OpenOption的实现类提供了若干个常量表示以读/写等模式打开文件。</p>
+<p>随后就可以进行异步的读/写操作了。无论读还是写，都提供2个重载版本</p>
+<ul>
+<li>java.nio.channels.AsynchronousFileChannel#read(java.nio.ByteBuffer, long)</li>
+<li>java.nio.channels.AsynchronousFileChannel#read(java.nio.ByteBuffer, long, A, java.nio.channels.CompletionHandler<java.lang.integer,? super="" a="">)</java.lang.integer,?></li>
+<li>java.nio.channels.AsynchronousFileChannel#write(java.nio.ByteBuffer, long)</li>
+<li>java.nio.channels.AsynchronousFileChannel#write(java.nio.ByteBuffer, long, A, java.nio.channels.CompletionHandler<java.lang.integer,? super="" a="">)</java.lang.integer,?></li>
+</ul>
+<p>其中2个参数的方法，返回java.util.concurrent.Future供后期获取执行结果，而4个参数的版本，第4个参数直接是一个java.nio.channels.CompletionHandler类型的、当对文件异步读/写完成的回调。</p>
+<p>以读为例，测试代码如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">private static void readFuture() throws IOException, ExecutionException, InterruptedException &#123;</div><div class="line">    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(Paths.get(&quot;nio-async-file.txt&quot;), StandardOpenOption.READ)) &#123;</div><div class="line">        ByteBuffer buffer = ByteBuffer.allocate(1024);</div><div class="line">        Future&lt;Integer&gt; future = channel.read(buffer, 0);</div><div class="line">        int length = future.get();</div><div class="line">		//处理读取结果</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">private static void readCallback() throws IOException &#123;</div><div class="line">    AsynchronousFileChannel channel = AsynchronousFileChannel.open(Paths.get(&quot;nio-async-file.txt&quot;), StandardOpenOption.READ);</div><div class="line">    ByteBuffer buffer = ByteBuffer.allocate(1024);</div><div class="line"></div><div class="line">    channel.read(buffer, 0, null, new CompletionHandler&lt;Integer, ByteBuffer&gt;() &#123;</div><div class="line">        @Override</div><div class="line">        public void completed(Integer result, ByteBuffer attachment) &#123;</div><div class="line">            //读取成功回调</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        @Override</div><div class="line">        public void failed(Throwable exc, ByteBuffer attachment) &#123;</div><div class="line">            //读取失败回调</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>分了三部分记的NIO学习笔记暂告一段，可能涉及的内容基本上只是NIO如何使用，没有过多地深入其细节。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;这是NIO学习笔记的第3篇，也是最后一篇了，还剩下最后一个核心类——Selector，此外会补充一些前面略过的点。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Java" scheme="http://www.lx1992.com.cn/categories/java/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Java NIO学习笔记-2</title>
+    <link href="http://www.lx1992.com.cn/2017/09/04/java-nio-2/"/>
+    <id>http://www.lx1992.com.cn/2017/09/04/java-nio-2/</id>
+    <published>2017-09-04T08:04:18.000Z</published>
+    <updated>2017-09-05T12:12:29.737Z</updated>
+    
+    <content type="html"><![CDATA[<p>继续NIO部分的内容。上一篇主要介绍了NIO的基本概念，以及Buffer这一NIO核心类的使用，这第二篇我们来看下一个核心类——Channel的使用。</p>
+<p>相比BIO中的InputStream、OutputStream，Channel有这么几点不同：</p>
+<ul>
+<li>BIO中明确了InputStream只能读、OutputStream只能写，而大多数情况下Channel既能读又能写</li>
+<li>java.io.InputStream#read()直接返回从流中读到的数据，java.io.OutputStream#write(int)直接将参数中的值写入流，但Channel的读和写都是基于上一篇的Buffer的，而且可以是异步的</li>
+</ul>
+<a id="more"></a>
+<h4 id="FileChannel"><a href="#FileChannel" class="headerlink" title="FileChannel"></a>FileChannel</h4><p>直接看一个例子：用FileChannel简单的读写一个文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 写</div><div class="line"> */</div><div class="line">private static void write() throws IOException &#123;</div><div class="line">    try (RandomAccessFile file = new RandomAccessFile(&quot;basic-channel-usage.txt&quot;, &quot;rw&quot;); FileChannel channel = file.getChannel()) &#123;</div><div class="line">        ByteBuffer buffer = ByteBuffer.allocate(32);</div><div class="line"></div><div class="line">        String datetime = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(LocalDateTime.now());</div><div class="line">        buffer.put(datetime.getBytes(Charset.forName(&quot;utf-8&quot;)));</div><div class="line"></div><div class="line">        buffer.flip();</div><div class="line">        System.out.println(buffer.remaining() + &quot;字节被写入.&quot;);</div><div class="line"></div><div class="line">        while (buffer.hasRemaining()) &#123;</div><div class="line">            channel.write(buffer);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line"> * 读</div><div class="line"> */</div><div class="line">private static void read() throws IOException &#123;</div><div class="line">    try (RandomAccessFile file = new RandomAccessFile(&quot;basic-channel-usage.txt&quot;, &quot;r&quot;); FileChannel channel = file.getChannel()) &#123;</div><div class="line">        ByteBuffer buffer = ByteBuffer.allocate(32);</div><div class="line"></div><div class="line">        while (channel.read(buffer) != -1) &#123;</div><div class="line">            buffer.flip();</div><div class="line">            System.out.println(buffer.remaining() + &quot;字节被读出.&quot;);</div><div class="line"></div><div class="line">            while (buffer.hasRemaining()) &#123;</div><div class="line">                byte[] data = new byte[buffer.remaining()];</div><div class="line">                buffer.get(data);</div><div class="line">                System.out.println(new String(data, Charset.forName(&quot;utf-8&quot;)));</div><div class="line">            &#125;</div><div class="line">            buffer.clear();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在使用FileChannel之前必须打开它(同理，使用之后必须关闭它)，同操作文件、数据库连接等十分相像。获得java.nio.channels.FileChannel有三种方式</p>
+<ul>
+<li>java.io.FileInputStream#getChannel</li>
+<li>java.io.FileOutputStream#getChannel</li>
+<li>java.io.RandomAccessFile#getChannel</li>
+</ul>
+<blockquote>
+<p>注意：通过FileInputStream和FileOutputStream获得的Channel只能读/写，强行写/读将抛出java.nio.channels.NonWritableChannelException和java.nio.channels.NonReadableChannelException异常。</p>
+</blockquote>
+<p>而后，便可使用</p>
+<ul>
+<li>java.nio.channels.FileChannel#read(java.nio.ByteBuffer)</li>
+<li>java.nio.channels.FileChannel#write(java.nio.ByteBuffer)</li>
+</ul>
+<p>两个方法，结合Buffer对Channel进行读和写，要注意每次操作后Buffer中索引的变化，否则很容易发生不可描述的BUG。</p>
+<p>Channel的另一个特性是Scattering Read/Gathering Write，字面上的意思是分散读和集中写，实际使用上就是将一个Channel中的内容读到多个Buffer，或者将多个Buffer的内容写入一个Channel。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 集中写</div><div class="line"> */</div><div class="line">private static void gatheringWrite() throws IOException &#123;</div><div class="line">    try (FileOutputStream stream = new FileOutputStream(&quot;basic-channel-usage.txt&quot;); FileChannel channel = stream.getChannel()) &#123;</div><div class="line">        ByteBuffer[] buffers = new ByteBuffer[4];</div><div class="line"></div><div class="line">        for (int i = 0; i &lt; buffers.length; i++) &#123;</div><div class="line">            buffers[i] = ByteBuffer.allocate(32);</div><div class="line">            buffers[i].put(UUID.randomUUID().toString().replaceAll(&quot;-&quot;, &quot;&quot;).getBytes());</div><div class="line">            buffers[i].flip();</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        channel.write(buffers);</div><div class="line">        System.out.println(channel.position());</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line"> * 分散读</div><div class="line"> */</div><div class="line">private static void scatteringRead() throws IOException &#123;</div><div class="line">    try (FileInputStream stream = new FileInputStream(&quot;basic-channel-usage.txt&quot;); FileChannel channel = stream.getChannel()) &#123;</div><div class="line">        ByteBuffer[] buffers = new ByteBuffer[4];</div><div class="line">        for (int i = 0; i &lt; buffers.length; i++) &#123;</div><div class="line">            buffers[i] = ByteBuffer.allocate(32);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        channel.read(buffers);</div><div class="line"></div><div class="line">        for (ByteBuffer buffer : buffers) &#123;</div><div class="line">            buffer.flip();</div><div class="line">            while (buffer.hasRemaining()) &#123;</div><div class="line">                System.out.print((char) buffer.get());</div><div class="line">            &#125;</div><div class="line">            System.out.println();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>变化比较明显的地方其实只有2行：</p>
+<ul>
+<li>java.nio.channels.FileChannel#write(java.nio.ByteBuffer[])</li>
+<li>java.nio.channels.FileChannel#read(java.nio.ByteBuffer[])</li>
+</ul>
+<p>它们的参数由上面的单个Buffer变成了一个Buffer数组。对数组中的每一个Buffer，一个Buffer写满/读空后，才会继续下一个写/读Buffer。</p>
+<p>最后，FileChannel还有一组其他Channel所不具备的方法</p>
+<ul>
+<li>java.nio.channels.FileChannel#transferTo</li>
+<li>java.nio.channels.FileChannel#transferFrom</li>
+</ul>
+<p>这两个方法的存在意味着若一次I/O操作中有一方是文件的时候，可以方便地使用这两个方法把数据从一个Channel传输到另一个Channel。因为还没有了解到其他类型的Channel，先用两个FileChannel做示例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 转移</div><div class="line"> */</div><div class="line">private static void transfer() throws IOException &#123;</div><div class="line">    try (FileChannel channel1 = new RandomAccessFile(&quot;transfer-fr.txt&quot;, &quot;rw&quot;).getChannel();</div><div class="line">         FileChannel channel2 = new RandomAccessFile(&quot;transfer-to.txt&quot;, &quot;rw&quot;).getChannel()) &#123;</div><div class="line">        channel1.transferTo(0, channel1.size(), channel2);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="ServerSocketChannel和SocketChannel"><a href="#ServerSocketChannel和SocketChannel" class="headerlink" title="ServerSocketChannel和SocketChannel"></a>ServerSocketChannel和SocketChannel</h4><p>这两个Channel用于TCP通信，基本的使用方法上与基于BIO的ServerSocket和Socket没有太大的差异。</p>
+<p>对ServerSocketChannel而言，首先要打开(open)它，然后将它绑定(bind)到某个Socket地址上，而后它才能接受(accept)传入的连接。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">ServerSocketChannel serverChannel = ServerSocketChannel.open();</div><div class="line">serverChannel.bind(new InetSocketAddress(&quot;localhost&quot;, 8888));</div><div class="line">SocketChannel clientChannel = serverChannel.accept();</div></pre></td></tr></table></figure></p>
+<p>对与SocketChannel，更是只需要一步：打开(open)连接。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">SocketChannel channel = SocketChannel.open(new InetSocketAddress(&quot;localhost&quot;, 8888))</div></pre></td></tr></table></figure></p>
+<p>无论是服务端还是客户端，取得了SocketChannel的后续操作，同之前的FileChannel就十分相像了，调用下面的2个方法实现读/写。</p>
+<ul>
+<li>java.nio.channels.SocketChannel#read(java.nio.ByteBuffer)</li>
+<li>java.nio.channels.SocketChannel#write(java.nio.ByteBuffer)</li>
+</ul>
+<h4 id="DatagramChannel"><a href="#DatagramChannel" class="headerlink" title="DatagramChannel"></a>DatagramChannel</h4><p>有TCP自然就有UDP，作为一种面向无连接、不可靠的协议，它的读/写是通过发送和接收数据报来实现的。不像TCP有复杂的建立连接的过程，使用DatagramChannel之前只需要指明“我想像哪个Socket地址发送数据报”，或者“我想从哪个Socket地址接收数据报”即可。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 接收</div><div class="line"> */</div><div class="line">private static void receive() throws IOException &#123;</div><div class="line">    try (DatagramChannel channel = DatagramChannel.open()) &#123;</div><div class="line">        ByteBuffer buffer = ByteBuffer.allocate(32);</div><div class="line"></div><div class="line">        channel.socket().bind(new InetSocketAddress(9999));</div><div class="line">        channel.receive(buffer);</div><div class="line">        buffer.flip();</div><div class="line">            </div><div class="line">        while (buffer.hasRemaining()) &#123;</div><div class="line">            System.out.println(buffer.getLong());</div><div class="line">        &#125;</div><div class="line">        buffer.clear();</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line"> * 发送</div><div class="line"> */</div><div class="line">private static void send() throws IOException &#123;</div><div class="line">    try (DatagramChannel channel = DatagramChannel.open()) &#123;</div><div class="line">        ByteBuffer buffer = ByteBuffer.allocate(32);</div><div class="line">        buffer.putLong(System.currentTimeMillis());</div><div class="line">        buffer.flip();</div><div class="line"></div><div class="line">        while (buffer.hasRemaining()) &#123;</div><div class="line">            channel.send(buffer, new InetSocketAddress(9999));</div><div class="line">        &#125;</div><div class="line">        buffer.clear();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>关键的方法就2个</p>
+<ul>
+<li>java.nio.channels.DatagramChannel#send</li>
+<li>java.nio.channels.DatagramChannel#receive</li>
+</ul>
+<p>但是注意到DatagramChannel中其实也是有read和write方法的。</p>
+<ul>
+<li>java.nio.channels.DatagramChannel#read(java.nio.ByteBuffer)</li>
+<li>java.nio.channels.DatagramChannel#write(java.nio.ByteBuffer)</li>
+</ul>
+<p>它们的作用是什么呢？上面的Demo是先将Channel的Socket绑定到某个地址再接收数据，或者在发送时才指定发往哪个Socket地址。DatagramChannel亦可以先“连接”到某个地址。</p>
+<ul>
+<li>java.nio.channels.DatagramChannel#connect</li>
+</ul>
+<p>随后收发数据都只能面向这个地址，但切记UDP是无连接的，这个connect并不会向TCP那样建立真正的连接，最多只是设置一种绑定关系。</p>
+<h4 id="关于非阻塞"><a href="#关于非阻塞" class="headerlink" title="关于非阻塞"></a>关于非阻塞</h4><p>打住！不觉得哪里不对吗？既然是NIO，怎么到目前为止还没有看出哪里体现出非阻塞了……事实上，Channel们既可以仍是阻塞的，也能够通过这个方法并传入参数false，设置成非阻塞的。</p>
+<ul>
+<li>java.nio.channels.spi.AbstractSelectableChannel#configureBlocking</li>
+</ul>
+<blockquote>
+<p>注意：FileChannel并没有继承至java.nio.channels.spi.AbstractSelectableChannel，也就意味着FileChannel暂时没办法设置成非阻塞的。</p>
+</blockquote>
+<p>设置成非阻塞以后，再调用曾经的阻塞方法，比如accept，read，write，都将立即返回。我们应当通过判断返回值，来确定刚刚调用的非阻塞方法究竟结果几何。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">try (ServerSocketChannel serverChannel = ServerSocketChannel.open()) &#123;</div><div class="line">    serverChannel.configureBlocking(false);</div><div class="line">    serverChannel.bind(new InetSocketAddress(&quot;localhost&quot;, 8888));</div><div class="line">    System.out.println(&quot;服务端在&quot; + serverChannel.getLocalAddress() + &quot;上监听……&quot;);</div><div class="line"></div><div class="line">    while (true) &#123;</div><div class="line">        try (SocketChannel clientChannel = serverChannel.accept()) &#123;</div><div class="line">            if (clientChannel == null) &#123;</div><div class="line">                System.out.println(&quot;没有连接&quot;);</div><div class="line">                continue;</div><div class="line">            &#125;</div><div class="line">            //略</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>上面这样的代码看着都汗……实际上，更多的时候，非阻塞要配合还没有提到的最后一个核心类——Selector一起使用，我们第3篇见。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;继续NIO部分的内容。上一篇主要介绍了NIO的基本概念，以及Buffer这一NIO核心类的使用，这第二篇我们来看下一个核心类——Channel的使用。&lt;/p&gt;
+&lt;p&gt;相比BIO中的InputStream、OutputStream，Channel有这么几点不同：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;BIO中明确了InputStream只能读、OutputStream只能写，而大多数情况下Channel既能读又能写&lt;/li&gt;
+&lt;li&gt;java.io.InputStream#read()直接返回从流中读到的数据，java.io.OutputStream#write(int)直接将参数中的值写入流，但Channel的读和写都是基于上一篇的Buffer的，而且可以是异步的&lt;/li&gt;
+&lt;/ul&gt;
+    
+    </summary>
+    
+      <category term="Java" scheme="http://www.lx1992.com.cn/categories/java/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Java NIO学习笔记-1</title>
+    <link href="http://www.lx1992.com.cn/2017/09/04/java-nio-1/"/>
+    <id>http://www.lx1992.com.cn/2017/09/04/java-nio-1/</id>
+    <published>2017-09-04T03:13:04.000Z</published>
+    <updated>2017-09-04T13:48:24.919Z</updated>
+    
+    <content type="html"><![CDATA[<p>Java的NIO，即New I/O，也叫Non-Blocking I/O，作为一个Java 1.4就推出的特性，其实老早就听说了。平时项目中用到的各种Web容器啥的，比方说Tomcat、Jetty，内部都用到了NIO，更别提像Netty这种专门的NIO框架了。最近抽了点时间，对它做了一点简单的了解。</p>
+<a id="more"></a>
+<h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p>首先，NIO包含3个核心的组件，分别是java.nio.<a href="https://docs.oracle.com/javase/8/docs/api/java/nio/Buffer.html" target="_blank" rel="external">Buffer</a>、java.nio.channels.<a href="https://docs.oracle.com/javase/8/docs/api/java/nio/channels/Channel.html" target="_blank" rel="external">Channel</a>和java.nio.channels.<a href="https://docs.oracle.com/javase/8/docs/api/java/nio/channels/Selector.html" target="_blank" rel="external">Selector</a>，即通道、缓冲和选择器。简单地说，数据从通道读入缓冲，或从缓冲写入通道(Channels read data into Buffers, and Buffers write data into Channels)，而选择器用于检测通道的事件。</p>
+<p>相比于面向字节或者字符的BIO，在NIO中，一个线程在(发起)从读数据到缓冲区以后，可以去做其他的事，直到读取完成，再回来继续处理，写也是类似的，因而说NIO是非阻塞的。</p>
+<p>常见的Channel包括</p>
+<ul>
+<li>java.nio.channels.FileChannel</li>
+<li>java.nio.channels.SocketChannel</li>
+<li>java.nio.channels.ServerSocketChannel</li>
+<li>java.nio.channels.DatagramChannel</li>
+</ul>
+<p>从名字上应该不难猜出，它们分别是用于处理文件、TCP和UDP的通道。</p>
+<p>常见的Buffer包括</p>
+<ul>
+<li>java.nio.ByteBuffer</li>
+<li>java.nio.CharBuffer</li>
+<li>java.nio.DoubleBuffer</li>
+<li>java.nio.FloatBuffer</li>
+<li>java.nio.IntBuffer</li>
+<li>java.nio.LongBuffer</li>
+<li>java.nio.ShortBuffer</li>
+</ul>
+<p>这个看起来比通道更清爽，除去Boolean，其余7种基本数据类型分别有各自对应的缓冲啊哈~此外，ByteBuffer有一个子类MappedByteBuffer，根据API说明，它用于内存到文件的直接映射。</p>
+<h4 id="Buffer"><a href="#Buffer" class="headerlink" title="Buffer"></a>Buffer</h4><p>Buffer的本质上就是一块内存区域，示意图如下。图中有3个索引，position、limit和capacity，分别指代下一个<em>要操作</em>的元素的位置、下一个<em>不可操作</em>的元素的位置和Buffer的总长度。此外，我们把limit-position的值记为remaining，意为Buffer中当前剩余元素的个数。</p>
+<p><img src="../images/2ba06c5a-dd3d-4b73-8e49-fa33e7a14554.png" alt=""><br>(图源：《深入分析JavaWeb技术内幕(修订版)》，许令波)</p>
+<p>首先来创建一个Buffer，以ByteBuffer为例，此时position=0，limit=16，capacity=16，表示缓冲区容量16，接下来操作0号位置，最多可以操作到16号位置(不含)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ByteBuffer buffer = ByteBuffer.allocate(16);</div></pre></td></tr></table></figure></p>
+<p>接着往缓冲区里放入三个元素(大写字母A、B、C)，看到position=3，limit和capacity无变化，表明当前缓冲区前3个位置当前已经有数据了。</p>
+<p>此外java.nio.ByteBuffer#put(byte)方法还有几个变体，例如java.nio.ByteBuffer#putInt(int)，用于向缓冲区里放其他类型的数据，但如果往缓冲区里放超过其容量个元素，将抛出java.nio.BufferOverflowException。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">for (int i = &apos;A&apos;; i &lt; &apos;D&apos;; i++) &#123;</div><div class="line">    buffer.put((byte) i);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>既然可以用put来放数据，必然就有get来取数据，方法同样有多个，包括java.nio.ByteBuffer#get()、java.nio.ByteBuffer#getInt()等。</p>
+<p>且慢！get取出数据的同时，position仍然在往前移动啊！前面我们向Buffer添加了3个元素，如果直接get3次，非但取出的是3个0(position为3、4、5的元素)，还把position移到了6号位置。</p>
+<p>所以我们要先调用一下java.nio.Buffer#flip()方法，它的作用是另limit=position，然后使position=0，这样我们既可以重新访问刚才放入Buffer的数据、又不会访问到未使用的位置了(position不能超过limit)，因此有些资料中说这个方法用于“Buffer的读/写”。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">buffer.flip();</div><div class="line">//从缓冲区取数据</div><div class="line">for (int i = 0; i &lt; 3; i++) &#123;</div><div class="line">    System.out.println(buffer.get());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>如果需要重新读已经读过的Buffer，可以使用java.nio.Buffer#rewind()方法，它只将position复位，不改变limit<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">buffer.rewind();</div><div class="line">//又可以愉快地重新读啦</div><div class="line">for (int i = 0; i &lt; 3; i++) &#123;</div><div class="line">    System.out.println(buffer.get());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>读也读够了，接下来呢？重新把Buffer用在别的地方？那就需要先清除里面旧的东西，使用java.nio.Buffer#clear()方法，它令position=0，limit=capacity，也就是Buffer刚创建出来的样子。注意哦，里边的数据并没有真正被清掉，这和我们删除磁盘文件的道理有点像。</p>
+<p>换一种特殊一点的情况，Buffer我们暂时只读了一部分(比方说写入了10字节，先读出5字节)，这时我希望把已经读过的那5个字节的空间让出来。那就需要用java.nio.ByteBuffer#compact()方法“压缩”一下，其原理是1.使用java.lang.System#arraycopy()把Buffer中未读取的数据(position到limit-1部分)复制到Buffer的开头；2.重新设置position=limit-position(即remaining)、limit=capacity。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"> //压缩缓冲区</div><div class="line">buffer.compact();</div><div class="line">//清除缓冲区</div><div class="line">buffer.clear();</div></pre></td></tr></table></figure></p>
+<p>此外补充一个前面略过的索引——mark，它的初始值是-1，可以调用java.nio.Buffer#mark()方法在当前position处“打个标签”，然后在需要的时候调用java.nio.Buffer#reset()，把position设置到mark过的地方。注意，flip、rewind、clear、compact都会导致mark被自动清除。</p>
+<p>这一篇主要就讲讲什么是NIO，以及Buffer相关的东西，其他内容下一篇见~</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Java的NIO，即New I/O，也叫Non-Blocking I/O，作为一个Java 1.4就推出的特性，其实老早就听说了。平时项目中用到的各种Web容器啥的，比方说Tomcat、Jetty，内部都用到了NIO，更别提像Netty这种专门的NIO框架了。最近抽了点时间，对它做了一点简单的了解。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Java" scheme="http://www.lx1992.com.cn/categories/java/"/>
+    
+    
+  </entry>
+  
+  <entry>
     <title>2018校招——花旗金融信息(一面)</title>
     <link href="http://www.lx1992.com.cn/2017/08/29/campus-recruiting-cstc-citi-1/"/>
     <id>http://www.lx1992.com.cn/2017/08/29/campus-recruiting-cstc-citi-1/</id>
     <published>2017-08-29T07:05:44.000Z</published>
-    <updated>2017-08-29T08:03:04.788Z</updated>
+    <updated>2017-09-04T03:16:08.095Z</updated>
     
     <content type="html"><![CDATA[<p>时隔近一个月后继续我的秋招(无奈地继续老板的坑……)<br>这回面的不是传统的互联网公司了，作为金融行业，可能风格和套路都有比较大的不同，也导致我整个过程(23分钟)都有几分紧张，但事后照例整理下被问到的问题。</p>
 <a id="more"></a>
@@ -43,8 +284,6 @@
       <category term="面经" scheme="http://www.lx1992.com.cn/categories/%E9%9D%A2%E7%BB%8F/"/>
     
     
-      <category term="校招" scheme="http://www.lx1992.com.cn/tags/%E6%A0%A1%E6%8B%9B/"/>
-    
   </entry>
   
   <entry>
@@ -52,7 +291,7 @@
     <link href="http://www.lx1992.com.cn/2017/07/20/campus-recruiting-antfin-2/"/>
     <id>http://www.lx1992.com.cn/2017/07/20/campus-recruiting-antfin-2/</id>
     <published>2017-07-20T06:11:58.000Z</published>
-    <updated>2017-08-29T07:06:42.123Z</updated>
+    <updated>2017-09-04T03:16:01.875Z</updated>
     
     <content type="html"><![CDATA[<p>距一面仅过去两天，遂接到二面电话（事实上昨天就打了一次电话，但约的今天面试）。二面用时1小时27分钟，应该算是比较长的了，时间关系，简单整理一下问到的问题。<br><a id="more"></a></p>
 <p>项目类：</p>
@@ -101,8 +340,6 @@
       <category term="面经" scheme="http://www.lx1992.com.cn/categories/%E9%9D%A2%E7%BB%8F/"/>
     
     
-      <category term="校招,面经,阿里" scheme="http://www.lx1992.com.cn/tags/%E6%A0%A1%E6%8B%9B-%E9%9D%A2%E7%BB%8F-%E9%98%BF%E9%87%8C/"/>
-    
   </entry>
   
   <entry>
@@ -110,7 +347,7 @@
     <link href="http://www.lx1992.com.cn/2017/07/18/campus-recruiting-antfin-1/"/>
     <id>http://www.lx1992.com.cn/2017/07/18/campus-recruiting-antfin-1/</id>
     <published>2017-07-18T12:30:12.000Z</published>
-    <updated>2017-07-20T06:13:57.331Z</updated>
+    <updated>2017-09-04T03:15:53.583Z</updated>
     
     <content type="html"><![CDATA[<p>2018年的春招来得比往年都早，这周投了蚂蚁金服内推，刚刚接到一面电话，时长22分钟，简记如下。<br><a id="more"></a></p>
 <ol>
@@ -141,8 +378,6 @@
     
       <category term="面经" scheme="http://www.lx1992.com.cn/categories/%E9%9D%A2%E7%BB%8F/"/>
     
-    
-      <category term="校招,面经,阿里" scheme="http://www.lx1992.com.cn/tags/%E6%A0%A1%E6%8B%9B-%E9%9D%A2%E7%BB%8F-%E9%98%BF%E9%87%8C/"/>
     
   </entry>
   
@@ -329,9 +564,10 @@
     <link href="http://www.lx1992.com.cn/2017/02/04/android-mipmap-resolution/"/>
     <id>http://www.lx1992.com.cn/2017/02/04/android-mipmap-resolution/</id>
     <published>2017-02-04T15:21:51.000Z</published>
-    <updated>2017-02-04T15:33:38.186Z</updated>
+    <updated>2017-09-04T03:16:56.587Z</updated>
     
     <content type="html"><![CDATA[<p>偶尔也会做点Android的应用，每每用到图片素材，在寻找和加工过程中，多少会疑惑什么分辨率合适。这次刚好参考了一些别人的做法，加上自己找了几种不同分辨率的手机测试了下效果说得过去，记下来做个备忘。</p>
+<a id="more"></a>
 <p>首先现在用AS建好工程以后图片类素材分了5种DPI：mdpi、hdpi、xhdpi、xxhdpi、xxxhdpi，每种DPI下都预置了Android的小机器人作为应用的启动器图标，它的分辨率就可以做为一个参考</p>
 <table>
 <thead>
@@ -400,7 +636,6 @@
     <summary type="html">
     
       &lt;p&gt;偶尔也会做点Android的应用，每每用到图片素材，在寻找和加工过程中，多少会疑惑什么分辨率合适。这次刚好参考了一些别人的做法，加上自己找了几种不同分辨率的手机测试了下效果说得过去，记下来做个备忘。&lt;/p&gt;
-&lt;p&gt;首先现在用AS建好工程以后图片类素材分了5种DPI：mdpi
     
     </summary>
     
@@ -746,7 +981,7 @@
     
     <content type="html"><![CDATA[<p>项目中许多地方都需要邮件通知功能。以开发工具为例，譬如，Gogs在版本库变化时可以通知团队成员、Redmine在项目（任务）进度变化时也有类似的功能，更进一步地，程序上线后将会配置相应的JVM监控，以便于发生线上故障时（程序抛出非预期的异常等）及时通知开发者处理。</p>
 <a id="more"></a>
-<p>但是，有几个问题需要留意。首先是如何发送邮件？自己搭建一套完整的邮件服务？真的这样做的话，可以以类似<a href="&#109;&#x61;&#x69;&#x6c;&#116;&#x6f;&#x3a;&#109;&#x61;&#105;&#108;&#x40;&#109;&#121;&#100;&#111;&#x6d;&#x61;&#x69;&#x6e;&#x2e;&#x63;&#111;&#x6d;">&#109;&#x61;&#105;&#108;&#x40;&#109;&#121;&#100;&#111;&#x6d;&#x61;&#x69;&#x6e;&#x2e;&#x63;&#111;&#x6d;</a>的名义发送邮件，看上去是逼格满满，可就算不考虑这个操作的复杂性，在这个垃圾邮件泛滥的时代，十有八九这种自己发送的邮件会面临各种限制。再者，更现实一点，这些程序都运行在内网主机上，如何向外部发送邮件呢？</p>
+<p>但是，有几个问题需要留意。首先是如何发送邮件？自己搭建一套完整的邮件服务？真的这样做的话，可以以类似<a href="&#109;&#x61;&#x69;&#108;&#116;&#111;&#58;&#109;&#97;&#105;&#108;&#x40;&#x6d;&#121;&#x64;&#111;&#x6d;&#x61;&#105;&#110;&#46;&#x63;&#x6f;&#x6d;">&#109;&#97;&#105;&#108;&#x40;&#x6d;&#121;&#x64;&#111;&#x6d;&#x61;&#105;&#110;&#46;&#x63;&#x6f;&#x6d;</a>的名义发送邮件，看上去是逼格满满，可就算不考虑这个操作的复杂性，在这个垃圾邮件泛滥的时代，十有八九这种自己发送的邮件会面临各种限制。再者，更现实一点，这些程序都运行在内网主机上，如何向外部发送邮件呢？</p>
 <p>其实，使用邮件中继转发（relay）服务就可以完全解决上面这些所谓的“问题”。邮件中继转发，简单地说，就是邮件的最终递送仍旧由外部SMTP服务完成，163、QQ、Gmail什么的都可以，他们不是更专业吗？而我们的邮件服务器只是扮演一个代理的作用而已。</p>
 <p>肩负邮件中继转发这一使命的，也就是本文的主角——Postfix。想要详细学习了解的同学可以戳<a href="https://en.wikipedia.org/wiki/postfix_(software" target="_blank" rel="external">这里</a>)。在本例中，我们的程序将要发送的邮件交给Postfix，然后就没有然后了，完全不知道，也不需要知道邮件最后怎么样了。而收到邮件的Postfix，就像我们在邮件客户端（Foxmail、Thunderbird等）里点击“发送”按钮一般，将邮件交由配置好的外部SMTP服务。</p>
 <p>下面直接介绍开始配置的过程。</p>
@@ -810,118 +1045,6 @@
     </summary>
     
       <category term="Gogs" scheme="http://www.lx1992.com.cn/categories/gogs/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>重置MySQL服务器</title>
-    <link href="http://www.lx1992.com.cn/2017/01/03/reset-mysql-server/"/>
-    <id>http://www.lx1992.com.cn/2017/01/03/reset-mysql-server/</id>
-    <published>2017-01-03T13:36:15.000Z</published>
-    <updated>2017-01-26T19:46:44.287Z</updated>
-    
-    <content type="html"><![CDATA[<p>也不知道是造了什么虐，昨天搭建好的MySQL服务器今天竟然挂了。。。无奈又写了这篇。这篇文章主要包括两个部分，一是如何重置root密码，二是如何直接重建整个数据库。除非遇到一些比较极端的情况，否则所述的内容可能不会很常用。</p>
-<a id="more"></a>
-<h4 id="1-重置root密码"><a href="#1-重置root密码" class="headerlink" title="1. 重置root密码"></a>1. 重置root密码</h4><p>重置密码的步骤从网络上的资料看五花八门，所以还是参考<a href="http://dev.mysql.com/doc/refman/5.7/en/resetting-permissions.html" target="_blank" rel="external">官方指南</a>更靠谱。</p>
-<p>这个教程给出了3种方案，说是分别对应Windows系统、(类)Unix系统，和通用方案。我采用了其中的“通用方案”，总共分为6个步骤。</p>
-<h5 id="1-1-停止mysql服务"><a href="#1-1-停止mysql服务" class="headerlink" title="1.1 停止mysql服务"></a>1.1 停止mysql服务</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">service mysql stop</div></pre></td></tr></table></figure>
-<h5 id="1-2-加上参数–skip-grant-tables重启mysql服务"><a href="#1-2-加上参数–skip-grant-tables重启mysql服务" class="headerlink" title="1.2 加上参数–skip-grant-tables重启mysql服务"></a>1.2 加上参数–skip-grant-tables重启mysql服务</h5><p>这个是需要以安全模式直接启动mysqld守护，因此和大多数情况下用service操作不太一样。如果不愿意这么做，也可以把这个参数直接加进配置文件里<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[mysqld]</div><div class="line"># 加上这么一行，其他配置保持不变</div><div class="line">skip-grant-tables</div></pre></td></tr></table></figure></p>
-<p>教程中还建议一并加上–skip-networking参数。因为在skip-grant-tables模式下，mysql不需要输入密码就可以登录，这是相对不安全的，skip-networking可以阻止通过网络访问mysql。</p>
-<h5 id="1-3-直接登录mysql"><a href="#1-3-直接登录mysql" class="headerlink" title="1.3 直接登录mysql"></a>1.3 直接登录mysql</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mysql -uroot</div></pre></td></tr></table></figure>
-<h5 id="1-4-重置密码"><a href="#1-4-重置密码" class="headerlink" title="1.4 重置密码"></a>1.4 重置密码</h5><p>因为skip-grant-tables的原因，alter user、set password等操作都会被拒绝，教程里仍然提到了这个办法，可能是兼容性的考虑吧。</p>
-<p>此时要修改密码，可以直接修改user表，注意保存密码的字段已经不是老教程里说的password了，而是authentication_string。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"># 切换数据库</div><div class="line">use mysql;</div><div class="line"></div><div class="line"># 更新密码字段</div><div class="line">update user set authentication_string = password(&apos;&lt;new_password&gt;&apos;) where user = &apos;root;</div><div class="line"></div><div class="line"># 刷新权限</div><div class="line">flush privileges;</div></pre></td></tr></table></figure></p>
-<h5 id="1-5-恢复配置并重启服务"><a href="#1-5-恢复配置并重启服务" class="headerlink" title="1.5 恢复配置并重启服务"></a>1.5 恢复配置并重启服务</h5><p>就是删除或者注释掉刚加在配置文件里的skip-grant-tables，然后按照正常的方式重新启动mysql服务。</p>
-<h5 id="1-6-用新密码登录mysql"><a href="#1-6-用新密码登录mysql" class="headerlink" title="1.6 用新密码登录mysql"></a>1.6 用新密码登录mysql</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mysql -uroot -p</div></pre></td></tr></table></figure>
-<p>登录成功，但是执行任何操作都提示需要“重置密码”，不过这次就可以使用正常的方式修改密码了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># 适合5.7.6及以后版本</div><div class="line">alter user &apos;root&apos;@&apos;localhost&apos; identified by &apos;&lt;new_password&gt;&apos;</div><div class="line"></div><div class="line"># 适合5.7.5及以前版本</div><div class="line">set password for &apos;root&apos;@&apos;localhost&apos; = password(&apos;&lt;new_password&gt;&apos;);</div></pre></td></tr></table></figure></p>
-<h4 id="2-重建整个数据库"><a href="#2-重建整个数据库" class="headerlink" title="2. 重建整个数据库"></a>2. 重建整个数据库</h4><p>需要重建整个数据库的概率应当比重置root密码更低，一般是数据库发生了比较严重的故障或者损坏，且数据都不太重要或者做好了备份的情况下，直接清除掉现有的全部内容，恢复mysql服务到最原始的状态。总共分为4个步骤。</p>
-<h5 id="2-1-停止mysql服务"><a href="#2-1-停止mysql服务" class="headerlink" title="2.1 停止mysql服务"></a>2.1 停止mysql服务</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">service mysql stop</div></pre></td></tr></table></figure>
-<h5 id="2-2-删除数据目录（data-dir）下的全部文件"><a href="#2-2-删除数据目录（data-dir）下的全部文件" class="headerlink" title="2.2 删除数据目录（data_dir）下的全部文件"></a>2.2 删除数据目录（data_dir）下的全部文件</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"># 视data_dir而定</div><div class="line">cd /var/lib/mysql</div><div class="line">rm -rf *</div></pre></td></tr></table></figure>
-<p>如果没有做这一步，下一步会提示“数据目录中存在文件，操作失败”</p>
-<h5 id="2-3-重建数据库"><a href="#2-3-重建数据库" class="headerlink" title="2.3 重建数据库"></a>2.3 重建数据库</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mysqld --initialize</div></pre></td></tr></table></figure>
-<h5 id="2-4-重启服务"><a href="#2-4-重启服务" class="headerlink" title="2.4 重启服务"></a>2.4 重启服务</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">service mysql start</div></pre></td></tr></table></figure>
-<p>注意因为数据库已经被重置了，我也不知道新的root密码是什么了，试了下不是空密码，所以还得乖乖参考上一步，重置下密码。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;也不知道是造了什么虐，昨天搭建好的MySQL服务器今天竟然挂了。。。无奈又写了这篇。这篇文章主要包括两个部分，一是如何重置root密码，二是如何直接重建整个数据库。除非遇到一些比较极端的情况，否则所述的内容可能不会很常用。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="MySQL" scheme="http://www.lx1992.com.cn/categories/mysql/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>配置ssh免密码登录</title>
-    <link href="http://www.lx1992.com.cn/2017/01/02/ssh-public-key-login/"/>
-    <id>http://www.lx1992.com.cn/2017/01/02/ssh-public-key-login/</id>
-    <published>2017-01-02T11:59:47.000Z</published>
-    <updated>2017-01-26T19:52:33.904Z</updated>
-    
-    <content type="html"><![CDATA[<p>绝大多数情况下，我们都是通过ssh登录到云主机的，这个命令就是最最常规的ssh方式登录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ssh username@hostname</div></pre></td></tr></table></figure></p>
-<p>但一般地，线上主机多多少少会有一些额外的登录限制（当然，还是出于安全性的考虑）。常见的限制包括，限制从某些主机登录，限制用ssh密钥而不允许用密码登录等，这篇博客说说如何来配置后一种限制。</p>
-<a id="more"></a>
-<h4 id="1-配置ssh免密码登录"><a href="#1-配置ssh免密码登录" class="headerlink" title="1. 配置ssh免密码登录"></a>1. 配置ssh免密码登录</h4><p>这一步除了安全性因素外，其实懒也占了挺大一块的，ssh登录在后期是要大量使用的，每次输入密码真的太麻烦，所以在这里配置下ssh免密码登录。</p>
-<p>它的原理也很简单，假设要从A机器登录B机器，默认地会要求输入B机器的密码，但如果B机器上有A机器的公钥，就可以跳过这个步骤。所以我们要做的，就是在A机器上生成密钥对，并将其中的公钥提供给B机器。</p>
-<h5 id="1-1-在A机器上生成ssh密钥对"><a href="#1-1-在A机器上生成ssh密钥对" class="headerlink" title="1.1 在A机器上生成ssh密钥对"></a>1.1 在A机器上生成ssh密钥对</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ssh-keygen -t rsa</div></pre></td></tr></table></figure>
-<p>运行后一路回车，即可在~/.ssh目录下生成id_rsa和id_rsa.pub两个文件，其中带.pub后缀的就是公钥，另一个是私钥，千万不能泄露哦！</p>
-<h5 id="1-2-将公钥传输到B机器"><a href="#1-2-将公钥传输到B机器" class="headerlink" title="1.2 将公钥传输到B机器"></a>1.2 将公钥传输到B机器</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">scp ~/.ssh/id_rsa.pub username@hostname:~/</div></pre></td></tr></table></figure>
-<p>其中的username是B机器的用户名，hostname是B机器的主机名或IP地址，这时还是要输入密码的。</p>
-<h5 id="1-3-使B机器信任A机器的公钥"><a href="#1-3-使B机器信任A机器的公钥" class="headerlink" title="1.3 使B机器信任A机器的公钥"></a>1.3 使B机器信任A机器的公钥</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cat ~/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys</div></pre></td></tr></table></figure>
-<p>这里补上后来学到的另一种方案，可以用ssh-copy-id代替scp手动复制文件、cat重定向公钥（即1.2、1.3步）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ssh-copy-id username@hostname</div></pre></td></tr></table></figure></p>
-<h5 id="1-4-配置权限"><a href="#1-4-配置权限" class="headerlink" title="1.4 配置权限"></a>1.4 配置权限</h5><p>这一步网上的说法也是必须的，虽然一开始我没有配置这一步也没有出错，但是仔细想想出于安全性的考虑还是做一下为妙。所要完成的任务就是把B机器的.ssh目录权限设置成700（仅用户本人可以读、写、访问）， authorized_keys文件权限设置成600（仅用户本人可以读、写）。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">chmod 700 .ssh</div><div class="line">chmod 600 .ssh/authorized_keys</div></pre></td></tr></table></figure></p>
-<p>行了！试一下，在A机器上直接ssh username@hostname不再需要输入密码就直接登录了。</p>
-<h4 id="2-关闭密码登录"><a href="#2-关闭密码登录" class="headerlink" title="2. 关闭密码登录"></a>2. 关闭密码登录</h4><p>上一步实现了ssh密钥登录，即快捷又方便，那么自然就可以关闭密码登录了。vim打开/etc/ssh/sshd_config文件，找到并修改下面2行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">PubkeyAuthentication yes</div><div class="line">PasswordAuthentication no</div></pre></td></tr></table></figure></p>
-<p>然后重启一下sshd<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">service sshd restart</div></pre></td></tr></table></figure></p>
-<p>搞定！现在再想使用密码登录会告诉你，不行！安全性进一步提高了。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;绝大多数情况下，我们都是通过ssh登录到云主机的，这个命令就是最最常规的ssh方式登录&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;ssh username@hostname&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;但一般地，线上主机多多少少会有一些额外的登录限制（当然，还是出于安全性的考虑）。常见的限制包括，限制从某些主机登录，限制用ssh密钥而不允许用密码登录等，这篇博客说说如何来配置后一种限制。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="Linux" scheme="http://www.lx1992.com.cn/categories/linux/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>Ubuntu简单用户管理</title>
-    <link href="http://www.lx1992.com.cn/2017/01/02/user-config-in-ubuntu/"/>
-    <id>http://www.lx1992.com.cn/2017/01/02/user-config-in-ubuntu/</id>
-    <published>2017-01-02T11:41:20.000Z</published>
-    <updated>2017-01-26T19:50:28.816Z</updated>
-    
-    <content type="html"><![CDATA[<p>系统环境现在已经有了。也是出于成本的考虑吧，目前我们的项目会在一台主机上搭建多个服务，以部署开发工具的那台云主机为例，就包括git、maven、sonarqube等。</p>
-<p>而linux本身作为一个多用户、多任务的系统，从减少耦合的角度看吧，也应该为每一个应用创建一个用户（话说没有人会希望一个简简单单的操作用的都是root用户吧）。</p>
-<a id="more"></a>
-<h4 id="1-创建用户"><a href="#1-创建用户" class="headerlink" title="1. 创建用户"></a>1. 创建用户</h4><p>在ubuntu系统中创建用户需要这么几个步骤。这里假设我们都能分清用户、用户组等概念了。首先是添加用户组<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo groupadd &lt;groupname&gt;</div></pre></td></tr></table></figure></p>
-<p>这样就添加了一个名为groupname的用户组。而后是添加用户<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo useradd &lt;username&gt; -g &lt;groupname&gt; -m</div></pre></td></tr></table></figure></p>
-<p>这样就添加了一个名为username的用户，参数-g表示把新增加的用户添加到groupname用户组，-m表示为新增加的用户创建家目录。</p>
-<p>最后当然要设置一个密码，输入下面这个命令，回车后输入2次username用户的新密码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo passwd &lt;username&gt;</div></pre></td></tr></table></figure></p>
-<p>上面这种是比较常规的方法，ubuntu系统中还有一个命令可以一次性完成这3个步骤<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adduser &lt;username&gt;</div></pre></td></tr></table></figure></p>
-<p>不就是把useradd的2个单词反一下嘛～接下来具体的操作这个命令的提示得很完善了。</p>
-<h4 id="2-赋予新用户sudo权利"><a href="#2-赋予新用户sudo权利" class="headerlink" title="2. 赋予新用户sudo权利"></a>2. 赋予新用户sudo权利</h4><p>用户也已经添加好了，不过当我们切换到username，准备sudo各种命令时会看到提示<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">username is not in the sudoers file.  This incident will be reported.</div></pre></td></tr></table></figure></p>
-<p>网上对此问题的解决方案也是挺多的，什么直接编辑/etc/sudoers，什么visudo，个人觉得更简单的办法是将username一并添加到sudo用户组<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo gpasswd -a &lt;usrname&gt; sudo</div></pre></td></tr></table></figure></p>
-<p>因为/etc/sudoers中有这么一段话<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># Allow members of group sudo to execute any command</div><div class="line">%sudo	ALL=(ALL:ALL) ALL</div></pre></td></tr></table></figure></p>
-<p>当然用传统的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">usermod -aG &lt;groupname&gt; &lt;username&gt;</div></pre></td></tr></table></figure></p>
-<p>也是阔以的。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;系统环境现在已经有了。也是出于成本的考虑吧，目前我们的项目会在一台主机上搭建多个服务，以部署开发工具的那台云主机为例，就包括git、maven、sonarqube等。&lt;/p&gt;
-&lt;p&gt;而linux本身作为一个多用户、多任务的系统，从减少耦合的角度看吧，也应该为每一个应用创建一个用户（话说没有人会希望一个简简单单的操作用的都是root用户吧）。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="Linux" scheme="http://www.lx1992.com.cn/categories/linux/"/>
     
     
   </entry>
